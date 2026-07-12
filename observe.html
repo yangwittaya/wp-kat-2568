@@ -157,6 +157,12 @@ const CLOUDINARY_PRESET = 'wp_kat_unsigned';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
+// ===== Auto-resize textarea =====
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
 // ===== Observation Rendering =====
 function buildObsSections() {
   let html = '<h6 class="font-weight-bold mb-2"><i class="fas fa-search text-success mr-2"></i>3. ข้อสังเกตและสิ่งที่พบ</h6>';
@@ -182,8 +188,9 @@ function buildObsSections() {
                 <div class="col-md-8">
                   <label style="font-size:.83rem;color:#555">สิ่งที่พบ</label>
                   <textarea class="form-control form-control-sm" id="finding-${point.id}" rows="2"
+                    style="overflow-y:hidden;resize:none"
                     placeholder="บันทึกสิ่งที่พบจากการสังเกตการณ์..."
-                    oninput="document.getElementById('finding-print-${point.id}').textContent=this.value"></textarea>
+                    oninput="autoResize(this);document.getElementById('finding-print-${point.id}').textContent=this.value"></textarea>
                   <div class="textarea-print" id="finding-print-${point.id}"
                     style="display:none;font-size:.85rem;border:1px solid #ccc;padding:.3rem .6rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:1cm"></div>
                 </div>
@@ -404,6 +411,7 @@ async function loadObserve() {
       const resEl  = document.getElementById('result-' + d.pointId);
       if (findEl) {
         findEl.value = d.finding || '';
+        autoResize(findEl);
         document.getElementById('finding-print-' + d.pointId).textContent = d.finding || '';
       }
       if (resEl)  resEl.value = d.result || '';
@@ -435,8 +443,13 @@ loadObserve();
 
 <style>
 @media print {
-  .obs-row { break-inside: avoid; }
+  /* อนุญาตให้ section card แบ่งหน้าได้ */
+  #obsBody .card { break-inside: auto !important; }
+  /* แต่ละ obs-row พยายามอยู่ในหน้าเดียว */
+  .obs-row { break-inside: avoid; page-break-inside: avoid; }
   .obs-row select { display: none !important; }
+  /* textarea-print ขยายตามเนื้อหาเสมอ */
+  .textarea-print { overflow: visible !important; height: auto !important; }
 }
 </style>
 </body>
