@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>กระดาษทำการออนไลน์ — IoT Smart Farm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-kat no-print">
+  <a class="navbar-brand font-weight-bold" href="index.html">
+    <i class="fas fa-seedling mr-1"></i> IoT Smart Farm
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav">
+    <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link active" href="index.html"><i class="fas fa-home mr-1"></i>หน้าหลัก</a></li>
+      <li class="nav-item"><a class="nav-link" href="audit.html"><i class="fas fa-clipboard-list mr-1"></i>แนวการตรวจสอบ</a></li>
+      <li class="nav-item"><a class="nav-link" href="checklist.html"><i class="fas fa-tasks mr-1"></i>Checklist</a></li>
+      <li class="nav-item"><a class="nav-link" href="observe.html"><i class="fas fa-eye mr-1"></i>สังเกตการณ์</a></li>
+      <li class="nav-item"><a class="nav-link" href="report.html"><i class="fas fa-file-alt mr-1"></i>สรุปผล</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container py-4">
+
+  <!-- Hero Card -->
+  <div class="card mb-4">
+    <div class="card-header-kat">
+      <i class="fas fa-leaf mr-2"></i>กระดาษทำการออนไลน์ — โครงการ IoT Smart Farm
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-8">
+          <h5 class="font-weight-bold text-success" id="projectName">
+            โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการเทคโนโลยีอุตสาหกรรมการทำฟาร์มอัจฉริยะเกษตรกรรม IoT ด้วยระบบ APP จำนวน 1 ชุด
+          </h5>
+          <table class="table table-sm table-borderless mt-2 mb-0" style="font-size:.92rem">
+            <tr><td class="text-muted" style="width:160px">หน่วยรับตรวจ</td><td id="auditee" class="font-weight-500">วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ</td></tr>
+            <tr><td class="text-muted">หน่วยตรวจสอบ</td><td id="unit">สำนักตรวจเงินแผ่นดินจังหวัดศรีสะเกษ</td></tr>
+            <tr><td class="text-muted">วงเงินสัญญา</td><td class="font-weight-bold text-danger" id="budget">4,987,000 บาท</td></tr>
+            <tr><td class="text-muted">ปีงบประมาณ</td><td id="year">พ.ศ. 2568</td></tr>
+            <tr><td class="text-muted">รายการทั้งหมด</td><td>19 รายการ (ตรวจเฉพาะรายการ 12, 13, 16, 17 และ 19)</td></tr>
+          </table>
+        </div>
+        <div class="col-md-4 text-center d-flex flex-column justify-content-center">
+          <div style="font-size:3rem;color:var(--green)" class="mb-2">
+            <i class="fas fa-tractor"></i>
+          </div>
+          <div id="overallProgress" class="font-weight-bold text-success" style="font-size:1.1rem">กำลังโหลด...</div>
+          <div class="progress progress-kat mt-2" style="height:10px">
+            <div id="progressBar" class="progress-bar" style="width:0%"></div>
+          </div>
+          <small class="text-muted mt-1">ความคืบหน้า Checklist รวม</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <a href="audit.html" class="text-decoration-none">
+        <div class="card h-100 text-center p-3 card-hover">
+          <div style="font-size:2.5rem;color:var(--green)"><i class="fas fa-clipboard-list"></i></div>
+          <h6 class="mt-2 font-weight-bold">แนวการตรวจสอบ</h6>
+          <small class="text-muted">วัตถุประสงค์ ขอบเขต ขั้นตอน หลักฐาน</small>
+          <div id="auditStatus" class="mt-2"><span class="badge badge-secondary">รอดำเนินการ</span></div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
+      <a href="checklist.html" class="text-decoration-none">
+        <div class="card h-100 text-center p-3 card-hover">
+          <div style="font-size:2.5rem;color:var(--green)"><i class="fas fa-tasks"></i></div>
+          <h6 class="mt-2 font-weight-bold">Checklist ตรวจรับ</h6>
+          <small class="text-muted">126 รายการ ใน 5 หมวด</small>
+          <div id="checklistStatus" class="mt-2"><span class="badge badge-secondary">รอดำเนินการ</span></div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
+      <a href="observe.html" class="text-decoration-none">
+        <div class="card h-100 text-center p-3 card-hover">
+          <div style="font-size:2.5rem;color:var(--green)"><i class="fas fa-eye"></i></div>
+          <h6 class="mt-2 font-weight-bold">สังเกตการณ์</h6>
+          <small class="text-muted">24 ประเด็น + รูปถ่าย/วิดีโอ</small>
+          <div id="observeStatus" class="mt-2"><span class="badge badge-secondary">รอดำเนินการ</span></div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-3 mb-3">
+      <a href="report.html" class="text-decoration-none">
+        <div class="card h-100 text-center p-3 card-hover">
+          <div style="font-size:2.5rem;color:var(--green)"><i class="fas fa-file-alt"></i></div>
+          <h6 class="mt-2 font-weight-bold">สรุปผลการตรวจสอบ</h6>
+          <small class="text-muted">รายงานสรุป + ลายชื่อ</small>
+          <div id="reportStatus" class="mt-2"><span class="badge badge-secondary">รอดำเนินการ</span></div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Checklist Summary -->
+  <div class="card mb-4">
+    <div class="card-header-kat"><i class="fas fa-chart-bar mr-2"></i>สรุปผล Checklist รายหมวด</div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0" id="summaryTable">
+          <thead class="thead-light">
+            <tr>
+              <th>รายการ</th><th>หัวข้อ</th><th class="text-center">ทั้งหมด</th>
+              <th class="text-center text-success">ผ่าน</th>
+              <th class="text-center text-danger">ไม่ผ่าน</th>
+              <th class="text-center text-warning">ไม่ได้ตรวจ</th>
+              <th class="text-center">ยังไม่บันทึก</th>
+            </tr>
+          </thead>
+          <tbody id="summaryBody">
+            <tr><td colspan="7" class="text-center text-muted py-4">
+              <i class="fas fa-spinner fa-spin mr-2"></i>กำลังโหลด...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Header Edit -->
+  <div class="card">
+    <div class="card-header-kat"><i class="fas fa-edit mr-2"></i>ข้อมูลโครงการ (แก้ไขได้)</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>เลขที่สัญญา</label>
+            <input type="text" class="form-control" id="contractNo" placeholder="เช่น สญ. 001/2568">
+          </div>
+          <div class="form-group">
+            <label>ชื่อผู้ขาย/คู่สัญญา</label>
+            <input type="text" class="form-control" id="vendor" placeholder="บริษัท...">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>วันที่ทำสัญญา</label>
+            <input type="text" class="form-control" id="contractDate" placeholder="DD/MM/BBBB">
+          </div>
+          <div class="form-group">
+            <label>วันที่ส่งมอบตามสัญญา</label>
+            <input type="text" class="form-control" id="deliveryDate" placeholder="DD/MM/BBBB">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>หมายเหตุโครงการ</label>
+        <textarea class="form-control" id="projectNote" rows="2" placeholder="หมายเหตุเพิ่มเติม..."></textarea>
+      </div>
+      <button class="btn btn-kat" onclick="saveProject()">
+        <i class="fas fa-save mr-1"></i>บันทึกข้อมูลโครงการ
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Load project data
+async function loadProject() {
+  try {
+    const doc = await db.collection(COL.PROJECT).doc('main').get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('contractNo').value   = d.contractNo   || '';
+      document.getElementById('vendor').value       = d.vendor       || '';
+      document.getElementById('contractDate').value = d.contractDate || '';
+      document.getElementById('deliveryDate').value = d.deliveryDate || '';
+      document.getElementById('projectNote').value  = d.projectNote  || '';
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function saveProject() {
+  const data = {
+    contractNo:   document.getElementById('contractNo').value,
+    vendor:       document.getElementById('vendor').value,
+    contractDate: document.getElementById('contractDate').value,
+    deliveryDate: document.getElementById('deliveryDate').value,
+    projectNote:  document.getElementById('projectNote').value,
+    updatedAt:    serverTS()
+  };
+  try {
+    await db.collection(COL.PROJECT).doc('main').set(data, { merge: true });
+    showToast('บันทึกข้อมูลโครงการสำเร็จ');
+  } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
+}
+
+// Load checklist summary
+async function loadChecklistSummary() {
+  try {
+    const snap = await db.collection(COL.CHECKLIST).get();
+    const results = {};
+    snap.forEach(d => {
+      const data = d.data();
+      const tab  = data.tab;
+      if (!results[tab]) results[tab] = { pass:0, fail:0, skip:0 };
+      if (data.result === 'ผ่าน')      results[tab].pass++;
+      else if (data.result === 'ไม่ผ่าน')  results[tab].fail++;
+      else if (data.result === 'ไม่ได้ตรวจ') results[tab].skip++;
+    });
+
+    let totalAll=0, totalDone=0, totalPass=0, totalFail=0;
+    const tabs = ['12','13','16','17','19'];
+    let html = '';
+    tabs.forEach(tab => {
+      const total = CHECKLIST_DATA[tab].items.length;
+      const r = results[tab] || { pass:0, fail:0, skip:0 };
+      const done  = r.pass + r.fail + r.skip;
+      const pending = total - done;
+      totalAll  += total;
+      totalDone += done;
+      totalPass += r.pass;
+      totalFail += r.fail;
+      html += `<tr>
+        <td><span class="badge badge-secondary">รายการ ${tab}</span></td>
+        <td style="font-size:.85rem">${CHECKLIST_DATA[tab].title.replace(/รายการที่ \d+ — /,'')}</td>
+        <td class="text-center">${total}</td>
+        <td class="text-center"><span class="badge badge-success">${r.pass}</span></td>
+        <td class="text-center"><span class="badge badge-danger">${r.fail}</span></td>
+        <td class="text-center"><span class="badge badge-warning">${r.skip}</span></td>
+        <td class="text-center">${pending > 0 ? '<span class="text-muted">'+pending+'</span>' : '<i class="fas fa-check text-success"></i>'}</td>
+      </tr>`;
+    });
+    html += `<tr class="font-weight-bold bg-light">
+      <td colspan="2">รวมทั้งหมด</td>
+      <td class="text-center">${totalAll}</td>
+      <td class="text-center text-success">${totalPass}</td>
+      <td class="text-center text-danger">${totalFail}</td>
+      <td class="text-center"></td>
+      <td class="text-center">${totalAll-totalDone > 0 ? totalAll-totalDone : '<i class="fas fa-check text-success"></i>'}</td>
+    </tr>`;
+    document.getElementById('summaryBody').innerHTML = html;
+
+    const pct = totalAll > 0 ? Math.round(totalDone/totalAll*100) : 0;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('overallProgress').textContent = `ความคืบหน้า ${pct}% (${totalDone}/${totalAll})`;
+
+    // Check audit plan
+    const auditDoc = await db.collection(COL.AUDIT_PLAN).doc('main').get();
+    if (auditDoc.exists && auditDoc.data().updatedAt) {
+      document.getElementById('auditStatus').innerHTML = '<span class="badge badge-success">บันทึกแล้ว</span>';
+    }
+    // Check observe
+    const obsSnap = await db.collection(COL.OBS_SUMMARY).doc('main').get();
+    if (obsSnap.exists && obsSnap.data().updatedAt) {
+      document.getElementById('observeStatus').innerHTML = '<span class="badge badge-success">บันทึกแล้ว</span>';
+    }
+    // Check report
+    const repDoc = await db.collection(COL.SUMMARY).doc('main').get();
+    if (repDoc.exists && repDoc.data().updatedAt) {
+      document.getElementById('reportStatus').innerHTML = '<span class="badge badge-success">บันทึกแล้ว</span>';
+    }
+    // Checklist
+    if (totalDone > 0) {
+      document.getElementById('checklistStatus').innerHTML =
+        `<span class="badge badge-${pct===100?'success':'warning'}">${pct===100?'สมบูรณ์':totalDone+'/'+totalAll}</span>`;
+    }
+  } catch(e) { console.error(e); }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#c62828' : '#2e7d32';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Add hover style
+const style = document.createElement('style');
+style.textContent = '.card-hover:hover { box-shadow: 0 4px 16px rgba(0,0,0,.15); transform: translateY(-2px); transition: all .2s; }';
+document.head.appendChild(style);
+
+loadProject();
+loadChecklistSummary();
+</script>
+</body>
+</html>

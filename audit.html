@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>แนวการตรวจสอบ — IoT Smart Farm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-kat no-print">
+  <a class="navbar-brand font-weight-bold" href="index.html"><i class="fas fa-seedling mr-1"></i> IoT Smart Farm</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav">
+    <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-home mr-1"></i>หน้าหลัก</a></li>
+      <li class="nav-item"><a class="nav-link active" href="audit.html"><i class="fas fa-clipboard-list mr-1"></i>แนวการตรวจสอบ</a></li>
+      <li class="nav-item"><a class="nav-link" href="checklist.html"><i class="fas fa-tasks mr-1"></i>Checklist</a></li>
+      <li class="nav-item"><a class="nav-link" href="observe.html"><i class="fas fa-eye mr-1"></i>สังเกตการณ์</a></li>
+      <li class="nav-item"><a class="nav-link" href="report.html"><i class="fas fa-file-alt mr-1"></i>สรุปผล</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container py-4" id="mainContent">
+
+  <!-- Print Header -->
+  <div class="print-header text-center mb-3">
+    <h4>แนวการตรวจสอบ</h4>
+    <p>โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการ IoT Smart Farm<br>
+    วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ — สำนักตรวจเงินแผ่นดินจังหวัดศรีสะเกษ</p>
+    <hr>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h5 class="mb-0 font-weight-bold"><i class="fas fa-clipboard-list text-success mr-2"></i>แนวการตรวจสอบ</h5>
+    <div>
+      <button class="btn btn-kat mr-2" onclick="saveAudit()"><i class="fas fa-save mr-1"></i>บันทึก</button>
+      <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
+    </div>
+  </div>
+
+  <!-- 1. Project Info -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-info-circle mr-2"></i>1. ข้อมูลโครงการ</div>
+    <div class="card-body">
+      <table class="table table-sm table-borderless mb-0" style="font-size:.93rem">
+        <tr>
+          <td class="text-muted" style="width:200px">หน่วยงานที่ตรวจสอบ</td>
+          <td class="font-weight-500">สำนักตรวจเงินแผ่นดินจังหวัดศรีสะเกษ</td>
+          <td class="text-muted" style="width:180px">ปีงบประมาณ</td>
+          <td>พ.ศ. 2568</td>
+        </tr>
+        <tr>
+          <td class="text-muted">หน่วยรับตรวจ</td>
+          <td class="font-weight-bold text-success">วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ</td>
+          <td class="text-muted">วงเงินสัญญา</td>
+          <td class="font-weight-bold text-danger">4,987,000 บาท</td>
+        </tr>
+        <tr>
+          <td class="text-muted">ชื่อโครงการ</td>
+          <td colspan="3">โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการเทคโนโลยีอุตสาหกรรมการทำฟาร์มอัจฉริยะเกษตรกรรม IoT ด้วยระบบ APP จำนวน 1 ชุด</td>
+        </tr>
+        <tr>
+          <td class="text-muted">รายการทั้งหมด</td>
+          <td>19 รายการ</td>
+          <td class="text-muted">รายการที่ตรวจเฉพาะ</td>
+          <td>รายการที่ 12, 13, 16, 17 และ 19 (ความเสี่ยงสูง)</td>
+        </tr>
+        <tr>
+          <td class="text-muted">เลขที่สัญญา</td>
+          <td><input type="text" class="form-control form-control-sm" id="contractNo" placeholder="ระบุเลขที่สัญญา"></td>
+          <td class="text-muted">วันที่ทำสัญญา</td>
+          <td><input type="text" class="form-control form-control-sm" id="contractDate" placeholder="DD/MM/BBBB"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. วัตถุประสงค์ -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-bullseye mr-2"></i>2. วัตถุประสงค์การตรวจสอบ</div>
+    <div class="card-body">
+      <p class="mb-2" style="font-size:.93rem">การตรวจสอบครั้งนี้มีวัตถุประสงค์เพื่อ:</p>
+      <ol style="font-size:.93rem; line-height:2">
+        <li>ตรวจสอบการตรวจรับพัสดุตามสัญญาว่าตรงคุณลักษณะเฉพาะใน TOR ครบถ้วนหรือไม่</li>
+        <li>ตรวจสอบกระบวนการตรวจรับว่าดำเนินการถูกต้องตาม พ.ร.บ. การจัดซื้อจัดจ้างและการบริหารพัสดุภาครัฐ พ.ศ. 2560</li>
+        <li>ตรวจสอบคุณภาพพัสดุโดยเน้นรายการที่มีความซับซ้อนทางเทคนิคและมีความเสี่ยงสูง</li>
+      </ol>
+      <label class="text-muted" style="font-size:.88rem">หมายเหตุเพิ่มเติม</label>
+      <textarea class="form-control" id="objectiveNote" rows="2" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></textarea>
+      <div class="textarea-print" id="objectiveNotePrint" style="display:none; font-size:.9rem; border:1px solid #ccc; padding:.4rem .75rem; background:white; white-space:pre-wrap; word-break:break-word;"></div>
+    </div>
+  </div>
+
+  <!-- 3. ขอบเขต -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-search mr-2"></i>3. ขอบเขตการตรวจสอบ</div>
+    <div class="card-body" style="font-size:.93rem">
+      <p>การตรวจสอบครั้งนี้ครอบคลุมการตรวจรับพัสดุโครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการ IoT Smart Farm
+      วงเงิน 4,987,000 บาท จำนวน 19 รายการ โดยทำการตรวจสอบเฉพาะรายการที่มีความเสี่ยงสูง ได้แก่
+      <strong>รายการที่ 12, 13, 16, 17 และ 19</strong> ซึ่งมีคุณลักษณะเฉพาะทางเทคนิคซับซ้อน ต้องการการทดสอบจริง
+      และมีมูลค่ารวมสูง</p>
+      <div class="info-box">
+        <i class="fas fa-exclamation-triangle mr-1"></i>
+        <strong>รายการที่ไม่ได้ตรวจ (1–11, 14, 15, 18):</strong>
+        เป็นอุปกรณ์มาตรฐานทั่วไปที่ตรวจรับโดยคณะกรรมการตรวจรับพัสดุของหน่วยรับตรวจแล้ว
+      </div>
+      <label class="text-muted" style="font-size:.88rem">หมายเหตุขอบเขต</label>
+      <textarea class="form-control" id="scopeNote" rows="2" placeholder="หมายเหตุขอบเขต (ถ้ามี)"></textarea>
+      <div class="textarea-print" id="scopeNotePrint" style="display:none; font-size:.9rem; border:1px solid #ccc; padding:.4rem .75rem; background:white; white-space:pre-wrap; word-break:break-word;"></div>
+    </div>
+  </div>
+
+  <!-- 4. รายการที่มุ่งตรวจสอบ -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-star mr-2"></i>4. รายการที่มุ่งตรวจสอบ (ความเสี่ยงสูง)</div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:.88rem">
+          <thead class="thead-light">
+            <tr><th>ลำดับ</th><th>รายการที่</th><th>ชื่อรายการ</th><th>จำนวน</th><th>ระดับความเสี่ยง</th><th>เหตุผล</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>12</td><td>ชุดทดลองควบคุมการทำงานระบบสมาร์ทฟาร์ม</td><td>3 ชุด</td><td><span class="badge badge-danger">สูงมาก</span></td><td>PLC/HMI/Gateway/Cloud ซับซ้อนสูง</td></tr>
+            <tr><td>2</td><td>13</td><td>ชุดซอฟต์แวร์ Dashboard IoT</td><td>1 ชุด</td><td><span class="badge badge-danger">สูงมาก</span></td><td>ต้องมี ISO 9001 Scope เฉพาะ + ทดสอบ ≥29 ฟีเจอร์</td></tr>
+            <tr><td>3</td><td>16</td><td>ระบบเลี้ยงไก่ AI Agriculture Chicken Tracking</td><td>1 ชุด</td><td><span class="badge badge-danger">สูงมาก</span></td><td>โรงเรือน+AI Camera+เซ็นเซอร์+ระบบควบคุม มูลค่าสูง 1,795,000 บาท</td></tr>
+            <tr><td>4</td><td>17</td><td>ระบบเลี้ยงสัตว์แบบแนวตั้ง RAS</td><td>1 ชุด</td><td><span class="badge badge-danger">สูงมาก</span></td><td>ระบบ RAS ซับซ้อน โรงเรือน+น้ำหมุนเวียน มูลค่า 1,200,000 บาท</td></tr>
+            <tr><td>5</td><td>19</td><td>ระบบ E-Learning</td><td>1 ระบบ</td><td><span class="badge badge-danger">สูงมาก</span></td><td>ต้องมี ISO 9001 + เครื่องหมายการค้า + LOA + เนื้อหา 4 ประเภท</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ขั้นตอนการตรวจสอบ -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-list-ol mr-2"></i>5. ขั้นตอนการตรวจสอบ</div>
+    <div class="card-body" style="font-size:.88rem">
+
+      <div class="section-header">5.1 รายการที่ 12 — ชุดทดลองควบคุมฯ สมาร์ทฟาร์ม</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="thead-light"><tr><th style="width:50px">ข้อ</th><th>ขั้นตอน</th><th>วัตถุประสงค์</th><th>หลักฐาน</th></tr></thead>
+          <tbody>
+            <tr><td>12.1</td><td>ตรวจนับจำนวน 3 ชุด</td><td>ยืนยันจำนวนครบถ้วน</td><td>รายงานตรวจรับ, ทะเบียนพัสดุ</td></tr>
+            <tr><td>12.2</td><td>ทดสอบ PLC ≥14 I/O + RS485/Modbus</td><td>ยืนยัน PLC ตามสเปค</td><td>แค็ตตาล็อก, ทดสอบสด, ภาพถ่าย</td></tr>
+            <tr><td>12.3</td><td>ทดสอบ HMI ≥7 หน้า แสดงผลครบ</td><td>ยืนยัน HMI ทำงานครบ</td><td>แค็ตตาล็อก, บันทึกหน้าจอ</td></tr>
+            <tr><td>12.4</td><td>ตรวจ Node Gateway สเปค (CPU/RAM/WiFi/BLE)</td><td>ยืนยัน Node Gateway ตรงสเปค</td><td>แค็ตตาล็อก, บันทึกการเชื่อมต่อ</td></tr>
+            <tr><td>12.5</td><td>ตรวจ Local Cloud สเปค (CPU/Gigabit/BT5/HDMI 4K)</td><td>ยืนยัน Local Cloud ตรงสเปค</td><td>แค็ตตาล็อก, ภาพ System Info</td></tr>
+            <tr><td>12.6</td><td>ทดสอบสื่อสาร RS485/Modbus ครบวงจร</td><td>ยืนยันระบบสื่อสารทำงาน</td><td>บันทึก Log, ภาพหน้าจอ Dashboard</td></tr>
+            <tr><td>12.7</td><td>ตรวจ Relay/Hub-LAN/แหล่งจ่ายไฟ</td><td>ยืนยันครบและทำงานได้</td><td>รายงานตรวจรับ, ภาพถ่าย</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header">5.2 รายการที่ 13 — ชุดซอฟต์แวร์ Dashboard IoT</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="thead-light"><tr><th style="width:50px">ข้อ</th><th>ขั้นตอน</th><th>วัตถุประสงค์</th><th>หลักฐาน</th></tr></thead>
+          <tbody>
+            <tr><td>13.1</td><td>ตรวจ ISO 9001:2015 Scope เฉพาะ + Weblink</td><td>ยืนยัน ISO ตรง Scope และยังบังคับใช้</td><td>ใบรับรอง ISO, บันทึกหน้าจอ Weblink</td></tr>
+            <tr><td>13.2</td><td>ตรวจหนังสือแต่งตั้งตัวแทน (LOA)</td><td>ยืนยันสิทธิ์ตัวแทนในไทย</td><td>Letter of Authorization</td></tr>
+            <tr><td>13.3</td><td>ตรวจแค็ตตาล็อก (ภาพจริง/จากโรงงาน)</td><td>ยืนยันแค็ตตาล็อกตรงข้อกำหนด</td><td>แค็ตตาล็อก Dashboard IoT</td></tr>
+            <tr><td>13.4</td><td>ทดสอบฟังก์ชัน Dashboard ≥7 ข้อหลัก</td><td>ยืนยันทำงานได้ตามฟีเจอร์</td><td>บันทึกผล, ภาพหน้าจอทุกฟีเจอร์</td></tr>
+            <tr><td>13.5</td><td>ทดสอบโปรแกรมพัฒนา Node</td><td>ยืนยันโปรแกรมพัฒนาใช้ได้จริง</td><td>บันทึกผล, ภาพหน้าจอโปรแกรม</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header">5.3 รายการที่ 16 — ระบบเลี้ยงไก่ AI Agriculture Chicken Tracking</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="thead-light"><tr><th style="width:50px">ข้อ</th><th>ขั้นตอน</th><th>วัตถุประสงค์</th><th>หลักฐาน</th></tr></thead>
+          <tbody>
+            <tr><td>16.1</td><td>วัดโรงเรือน ≥6×12×4 ม. + ตรวจวัสดุ</td><td>ยืนยันขนาดและวัสดุตามสัญญา</td><td>ภาพถ่าย, บันทึกวัดขนาด</td></tr>
+            <tr><td>16.2</td><td>วัด Buffer Room ≥2×6 ม.</td><td>ยืนยัน Buffer Room ตรงขนาด</td><td>ภาพถ่าย, บันทึกวัดขนาด</td></tr>
+            <tr><td>16.3</td><td>ตรวจพื้นคอนกรีต ≥8×14×0.08 ม.</td><td>ยืนยันพื้นคอนกรีตตรงขนาด</td><td>บันทึกวัดพื้นที่และความหนา</td></tr>
+            <tr><td>16.4</td><td>ตรวจตู้ควบคุม/Gateway/เซ็นเซอร์ 5 ชนิด</td><td>ยืนยันครบและทำงานได้จริง</td><td>แค็ตตาล็อก, ใบรับรอง ISO, บันทึกผลทดสอบ</td></tr>
+            <tr><td>16.5</td><td>ทดสอบกล้อง AI ตรวจสุขภาพไก่</td><td>ยืนยัน AI ทำงานได้จริง</td><td>บันทึก VDO/ภาพ AI, ภาพผลลัพธ์</td></tr>
+            <tr><td>16.6</td><td>ทดสอบระบบน้ำพ่นหมอก + อาหาร-น้ำ 2 แถว</td><td>ยืนยันระบบทำงานครบ</td><td>บันทึก VDO, รายงานตรวจรับ</td></tr>
+            <tr><td>16.7</td><td>ตรวจตู้อนุบาล 2 ชุด + ตู้ฟักไข่ 1 ชุด + พัดลม + CCTV</td><td>ยืนยันครบและทำงานได้</td><td>ภาพถ่าย, บันทึกผลทดสอบ</td></tr>
+            <tr><td>16.8</td><td>ตรวจ ISO 9001 ของ Gateway และซอฟต์แวร์</td><td>ยืนยันใบรับรองครบและถูกต้อง</td><td>ใบรับรอง ISO ทุกรายการ, บันทึก Weblink</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header">5.4 รายการที่ 17 — ระบบ RAS เลี้ยงสัตว์แบบแนวตั้ง</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="thead-light"><tr><th style="width:50px">ข้อ</th><th>ขั้นตอน</th><th>วัตถุประสงค์</th><th>หลักฐาน</th></tr></thead>
+          <tbody>
+            <tr><td>17.1</td><td>วัดโรงเรือน ≥4×12×4 ม. + ตรวจวัสดุ</td><td>ยืนยันขนาดและวัสดุ</td><td>ภาพถ่าย, บันทึกวัดขนาด</td></tr>
+            <tr><td>17.2</td><td>ตรวจพื้นคอนกรีต ≥6×14×0.08 ม.</td><td>ยืนยันพื้นคอนกรีตตรงขนาด</td><td>บันทึกวัดพื้นที่และความหนา</td></tr>
+            <tr><td>17.3</td><td>ตรวจนับกล่องเพาะ 4 ชุด 100 ใบ</td><td>ยืนยันจำนวนครบถ้วน</td><td>รายงานตรวจรับ, ภาพถ่าย</td></tr>
+            <tr><td>17.4</td><td>ทดสอบระบบ RAS (กรองทราย/Skimmer/โอโซน/UV/Pump)</td><td>ยืนยัน RAS ทำงานสมบูรณ์</td><td>บันทึก VDO เดินระบบ</td></tr>
+            <tr><td>17.5</td><td>ทดสอบเซ็นเซอร์คุณภาพน้ำ (PH/EC/DO/Temp)</td><td>ยืนยันเซ็นเซอร์วัดค่าแม่นยำ</td><td>บันทึกค่าที่วัดได้/ค่าอ้างอิง</td></tr>
+            <tr><td>17.6</td><td>ตรวจ ISO 9001 Gateway + Weblink</td><td>ยืนยันใบรับรอง ISO ถูกต้อง</td><td>ใบรับรอง ISO Gateway, บันทึก Weblink</td></tr>
+            <tr><td>17.7</td><td>ตรวจแคลมป์มิเตอร์ดิจิตอล + ไฟ LED 12 ชุด</td><td>ยืนยันครบและทำงานได้</td><td>ภาพถ่าย, บันทึกผลทดสอบ</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-header">5.5 รายการที่ 19 — ระบบ E-Learning</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="thead-light"><tr><th style="width:50px">ข้อ</th><th>ขั้นตอน</th><th>วัตถุประสงค์</th><th>หลักฐาน</th></tr></thead>
+          <tbody>
+            <tr><td>19.1</td><td>ตรวจ ISO 9001 Scope เฉพาะ + Weblink</td><td>ยืนยัน ISO ตรง Scope และบังคับใช้</td><td>ใบรับรอง ISO, บันทึก Weblink</td></tr>
+            <tr><td>19.2</td><td>ตรวจเครื่องหมายการค้าจดทะเบียน</td><td>ยืนยันซอฟต์แวร์มีเครื่องหมายการค้า</td><td>ใบจดทะเบียนเครื่องหมายการค้า</td></tr>
+            <tr><td>19.3</td><td>ตรวจหนังสือแต่งตั้งตัวแทน E-Learning (LOA)</td><td>ยืนยันสิทธิ์ตัวแทนในไทย</td><td>Letter of Authorization</td></tr>
+            <tr><td>19.4</td><td>ทดสอบ LMS ครบ 7 ฟีเจอร์</td><td>ยืนยัน LMS ทำงานครบฟีเจอร์</td><td>บันทึกผล, ภาพหน้าจอทุกฟีเจอร์</td></tr>
+            <tr><td>19.5</td><td>ตรวจเนื้อหาบทเรียน (Text/Graphic/Video/3D)</td><td>ยืนยันเนื้อหาครบตามสัญญา</td><td>รายการเนื้อหา, บันทึกหน้าจอ</td></tr>
+            <tr><td>19.6</td><td>ทดสอบระบบ Backup + Restore</td><td>ยืนยัน Backup ทำงานได้</td><td>บันทึกผลทดสอบ</td></tr>
+            <tr><td>19.7</td><td>ทดสอบบน Computer/Smartphone/Tablet</td><td>ยืนยัน Responsive ทุก Platform</td><td>บันทึกผลบนอุปกรณ์จริง</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Additional Notes -->
+      <div class="mt-3">
+        <label class="font-weight-600">หมายเหตุขั้นตอนการตรวจสอบ</label>
+        <textarea class="form-control" id="procedureNote" rows="3" placeholder="หมายเหตุเพิ่มเติม..."></textarea>
+        <div class="textarea-print" id="procedureNotePrint" style="display:none; font-size:.9rem; border:1px solid #ccc; padding:.4rem .75rem; background:white; white-space:pre-wrap; word-break:break-word;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. หลักฐาน -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-folder-open mr-2"></i>6. หลักฐานที่ต้องรวบรวม</div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:.88rem">
+          <thead class="thead-light"><tr><th>ลำดับ</th><th>ประเภทหลักฐาน</th><th>รายละเอียด</th><th>หมายเหตุ</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>สัญญาจัดซื้อ</td><td>สัญญา + TOR แนบท้าย</td><td>รวบรวมก่อนออกตรวจ</td></tr>
+            <tr><td>2</td><td>รายงานการตรวจรับพัสดุ</td><td>รายงาน + ลายเซ็นครบถ้วน</td><td>ขอจากหน่วยรับตรวจ</td></tr>
+            <tr><td>3</td><td>ใบรับรอง ISO 9001:2015</td><td>ของผู้ผลิตรายการ 13/16/17/19 + Weblink</td><td>ตรวจสอบ Weblink ออนไลน์</td></tr>
+            <tr><td>4</td><td>หนังสือแต่งตั้งตัวแทนจำหน่าย</td><td>Letter of Authorization รายการ 13 และ 19</td><td>ขอจากผู้ขาย/หน่วยรับตรวจ</td></tr>
+            <tr><td>5</td><td>แค็ตตาล็อกจากโรงงาน</td><td>PLC/HMI/Node Gateway/Dashboard IoT</td><td>ตรวจสอบแหล่งที่มา</td></tr>
+            <tr><td>6</td><td>บันทึกผลการทดสอบ</td><td>ทุกรายการความเสี่ยงสูง + ภาพถ่าย/VDO</td><td>จัดทำระหว่างออกตรวจ</td></tr>
+            <tr><td>7</td><td>ใบส่งของ/ใบแจ้งหนี้</td><td>เอกสารส่งมอบจากผู้ขาย</td><td>ขอจากหน่วยรับตรวจ</td></tr>
+            <tr><td>8</td><td>ทะเบียนพัสดุ</td><td>บันทึกรายการพัสดุที่ได้รับ</td><td>ขอจากหน่วยรับตรวจ</td></tr>
+            <tr><td>9</td><td>เครื่องหมายการค้าจดทะเบียน</td><td>ของซอฟต์แวร์ E-Learning รายการ 19</td><td>ขอจากผู้ขาย/หน่วยรับตรวจ</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. ลายชื่อ -->
+  <div class="card mb-4">
+    <div class="card-header-kat"><i class="fas fa-signature mr-2"></i>7. ลายมือชื่อ</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p class="font-weight-600 mb-3">ผู้จัดทำ</p>
+          <div class="sig-block">
+            <div class="form-group">
+              <label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="preparer1Name" value="นายอุเด่นศักดิ์ สว่างภพ">
+            </div>
+            <div class="form-group mb-0">
+              <label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="preparer1Pos" value="นักวิชาการตรวจเงินแผ่นดินชำนาญการ">
+            </div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="preparer1Date" class="form-control-plaintext d-inline" style="width:160px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+          <div class="sig-block">
+            <div class="form-group">
+              <label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="preparer2Name" value="นางสาวสุภัทรา ประสานพันธ์">
+            </div>
+            <div class="form-group mb-0">
+              <label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="preparer2Pos" value="นักวิชาการตรวจเงินแผ่นดินชำนาญการ">
+            </div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="preparer2Date" class="form-control-plaintext d-inline" style="width:160px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <p class="font-weight-600 mb-3">ผู้สอบทาน</p>
+          <div class="sig-block">
+            <div class="form-group">
+              <label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="reviewerName" value="นางสาวลักษณา สุนิพัฒน์">
+            </div>
+            <div class="form-group mb-0">
+              <label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="reviewerPos" value="ผู้อำนวยการกลุ่ม">
+            </div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="reviewerDate" class="form-control-plaintext d-inline" style="width:160px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+<script>
+// Sync textareas to print divs
+['objectiveNote','scopeNote','procedureNote'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener('input', () => {
+      document.getElementById(id+'Print').textContent = el.value;
+    });
+  }
+});
+
+async function saveAudit() {
+  const data = {
+    contractNo:     document.getElementById('contractNo').value,
+    contractDate:   document.getElementById('contractDate').value,
+    objectiveNote:  document.getElementById('objectiveNote').value,
+    scopeNote:      document.getElementById('scopeNote').value,
+    procedureNote:  document.getElementById('procedureNote').value,
+    preparer1Name:  document.getElementById('preparer1Name').value,
+    preparer1Pos:   document.getElementById('preparer1Pos').value,
+    preparer1Date:  document.getElementById('preparer1Date').value,
+    preparer2Name:  document.getElementById('preparer2Name').value,
+    preparer2Pos:   document.getElementById('preparer2Pos').value,
+    preparer2Date:  document.getElementById('preparer2Date').value,
+    reviewerName:   document.getElementById('reviewerName').value,
+    reviewerPos:    document.getElementById('reviewerPos').value,
+    reviewerDate:   document.getElementById('reviewerDate').value,
+    updatedAt:      serverTS()
+  };
+  try {
+    await db.collection(COL.AUDIT_PLAN).doc('main').set(data, { merge: true });
+    showToast('บันทึกแนวการตรวจสอบสำเร็จ ✓');
+  } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
+}
+
+async function loadAudit() {
+  try {
+    const doc = await db.collection(COL.AUDIT_PLAN).doc('main').get();
+    if (doc.exists) {
+      const d = doc.data();
+      const fields = ['contractNo','contractDate','objectiveNote','scopeNote','procedureNote',
+        'preparer1Name','preparer1Pos','preparer1Date','preparer2Name','preparer2Pos','preparer2Date',
+        'reviewerName','reviewerPos','reviewerDate'];
+      fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el && d[f] != null) el.value = d[f];
+      });
+      ['objectiveNote','scopeNote','procedureNote'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) document.getElementById(id+'Print').textContent = el.value;
+      });
+    }
+  } catch(e) { console.error(e); }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#c62828' : '#2e7d32';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+loadAudit();
+</script>
+</body>
+</html>

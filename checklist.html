@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist ตรวจรับพัสดุ — IoT Smart Farm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-kat no-print">
+  <a class="navbar-brand font-weight-bold" href="index.html"><i class="fas fa-seedling mr-1"></i> IoT Smart Farm</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav">
+    <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-home mr-1"></i>หน้าหลัก</a></li>
+      <li class="nav-item"><a class="nav-link" href="audit.html"><i class="fas fa-clipboard-list mr-1"></i>แนวการตรวจสอบ</a></li>
+      <li class="nav-item"><a class="nav-link active" href="checklist.html"><i class="fas fa-tasks mr-1"></i>Checklist</a></li>
+      <li class="nav-item"><a class="nav-link" href="observe.html"><i class="fas fa-eye mr-1"></i>สังเกตการณ์</a></li>
+      <li class="nav-item"><a class="nav-link" href="report.html"><i class="fas fa-file-alt mr-1"></i>สรุปผล</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container-fluid py-3 px-4">
+
+  <!-- Print Header -->
+  <div class="print-header text-center mb-3">
+    <h4>กระดาษทำการ Checklist ตรวจรับพัสดุ</h4>
+    <p>โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการ IoT Smart Farm — วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ<br>
+    ปีงบประมาณ 2568 | วงเงิน 4,987,000 บาท</p>
+    <hr>
+  </div>
+
+  <!-- Title + Actions -->
+  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h5 class="mb-0 font-weight-bold">
+      <i class="fas fa-tasks text-success mr-2"></i>Checklist ตรวจรับพัสดุ
+      <small class="text-muted ml-2" id="totalCount"></small>
+    </h5>
+    <div>
+      <button class="btn btn-sm btn-success mr-1" onclick="saveAll()"><i class="fas fa-save mr-1"></i>บันทึกทั้งหมด</button>
+      <button class="btn btn-sm btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
+    </div>
+  </div>
+
+  <!-- Progress Summary (no-print) -->
+  <div class="row mb-3 no-print" id="progressRow"></div>
+
+  <!-- Tabs (no-print) -->
+  <ul class="nav nav-tabs mb-3 no-print" id="checkTabs">
+    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab12">รายการ 12 <span class="badge badge-light ml-1" id="cnt12">22</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab13">รายการ 13 <span class="badge badge-light ml-1" id="cnt13">20</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab16">รายการ 16 <span class="badge badge-light ml-1" id="cnt16">34</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab17">รายการ 17 <span class="badge badge-light ml-1" id="cnt17">26</span></a></li>
+    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab19">รายการ 19 <span class="badge badge-light ml-1" id="cnt19">24</span></a></li>
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content" id="tabContent">
+    <div class="tab-pane fade show active" id="tab12"><div id="body12"></div></div>
+    <div class="tab-pane fade" id="tab13"><div id="body13"></div></div>
+    <div class="tab-pane fade" id="tab16"><div id="body16"></div></div>
+    <div class="tab-pane fade" id="tab17"><div id="body17"></div></div>
+    <div class="tab-pane fade" id="tab19"><div id="body19"></div></div>
+  </div>
+
+  <!-- Auditor Signature -->
+  <div class="card mt-4">
+    <div class="card-header-kat"><i class="fas fa-signature mr-2"></i>ลายมือชื่อผู้ตรวจสอบ</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="sig-block">
+            <div class="form-group"><label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="aud1Name" value="นายอุเด่นศักดิ์ สว่างภพ"></div>
+            <div class="form-group mb-0"><label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="aud1Pos" value="นักวิชาการตรวจเงินแผ่นดินชำนาญการ"></div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="aud1Date" class="form-control-plaintext d-inline" style="width:140px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="sig-block">
+            <div class="form-group"><label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="aud2Name" value="นางสาวสุภัทรา ประสานพันธ์"></div>
+            <div class="form-group mb-0"><label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="aud2Pos" value="นักวิชาการตรวจเงินแผ่นดินชำนาญการ"></div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="aud2Date" class="form-control-plaintext d-inline" style="width:140px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="sig-block">
+            <div class="form-group"><label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="reviewerName" value="นางสาวลักษณา สุนิพัฒน์"></div>
+            <div class="form-group mb-0"><label>ตำแหน่ง (ผู้สอบทาน)</label>
+              <input type="text" class="form-control form-control-sm" id="reviewerPos" value="ผู้อำนวยการกลุ่ม"></div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="reviewerDate" class="form-control-plaintext d-inline" style="width:140px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// In-memory state
+const state = {}; // { "12.1": { result:"ผ่าน", note:"..." }, ... }
+
+// Build checklist table for a tab
+function buildTab(tab) {
+  const data = CHECKLIST_DATA[tab];
+  const items = data.items;
+  let html = `
+    <div class="card mb-3">
+      <div class="card-header-kat" style="font-size:.9rem">${data.title}</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm check-table mb-0">
+            <thead>
+              <tr>
+                <th style="width:60px">รหัส</th>
+                <th>รายการตรวจสอบ</th>
+                <th style="width:160px">คุณลักษณะที่กำหนด</th>
+                <th style="width:150px">วิธีการตรวจ</th>
+                <th style="width:130px" class="text-center">ผลการตรวจ</th>
+                <th>หมายเหตุ</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+  items.forEach(item => {
+    html += `
+      <tr id="row-${item.id}">
+        <td class="font-weight-bold text-success" style="font-size:.8rem">${item.id}</td>
+        <td style="font-size:.82rem">${item.text}</td>
+        <td style="font-size:.78rem;color:#555">${item.spec}</td>
+        <td style="font-size:.78rem;color:#555">${item.method}</td>
+        <td class="text-center">
+          <select class="check-select" id="res-${item.id}" onchange="onResultChange('${item.id}')">
+            <option value="">-- เลือก --</option>
+            <option value="ผ่าน">✓ ผ่าน</option>
+            <option value="ไม่ผ่าน">✗ ไม่ผ่าน</option>
+            <option value="ไม่ได้ตรวจ">⚠ ไม่ได้ตรวจ</option>
+          </select>
+          <!-- Print view -->
+          <span class="print-badge d-none" id="badge-${item.id}"></span>
+        </td>
+        <td><input type="text" class="form-control form-control-sm" id="note-${item.id}"
+          placeholder="หมายเหตุ..." onchange="onNoteChange('${item.id}')" style="font-size:.8rem"></td>
+      </tr>`;
+  });
+
+  html += `</tbody></table></div></div></div>`;
+  return html;
+}
+
+function onResultChange(id) {
+  const val = document.getElementById('res-' + id).value;
+  if (!state[id]) state[id] = {};
+  state[id].result = val;
+
+  // Update style
+  const sel = document.getElementById('res-' + id);
+  sel.className = 'check-select';
+  if (val === 'ผ่าน') sel.classList.add('pass');
+  else if (val === 'ไม่ผ่าน') sel.classList.add('fail');
+  else if (val === 'ไม่ได้ตรวจ') sel.classList.add('skip');
+
+  // Update print badge
+  const badge = document.getElementById('badge-' + id);
+  if (badge) {
+    badge.textContent = val || '—';
+    badge.className = 'print-badge d-none badge';
+    if (val === 'ผ่าน') badge.classList.add('badge-success');
+    else if (val === 'ไม่ผ่าน') badge.classList.add('badge-danger');
+    else if (val === 'ไม่ได้ตรวจ') badge.classList.add('badge-warning');
+  }
+  updateProgress();
+}
+
+function onNoteChange(id) {
+  if (!state[id]) state[id] = {};
+  state[id].note = document.getElementById('note-' + id).value;
+}
+
+function updateProgress() {
+  const tabs = ['12','13','16','17','19'];
+  let html = '';
+  tabs.forEach(tab => {
+    const items = CHECKLIST_DATA[tab].items;
+    let pass=0, fail=0, skip=0;
+    items.forEach(it => {
+      const r = state[it.id] ? state[it.id].result : '';
+      if (r==='ผ่าน') pass++;
+      else if (r==='ไม่ผ่าน') fail++;
+      else if (r==='ไม่ได้ตรวจ') skip++;
+    });
+    const done = pass+fail+skip;
+    const pct = Math.round(done/items.length*100);
+    html += `<div class="col-md-2 col-4 mb-2">
+      <div class="card text-center py-2 px-1">
+        <small class="text-muted">รายการ ${tab}</small>
+        <div class="font-weight-bold text-success" style="font-size:1.1rem">${pct}%</div>
+        <div class="progress progress-kat" style="height:5px"><div class="progress-bar" style="width:${pct}%"></div></div>
+        <small><span class="text-success">${pass}✓</span> <span class="text-danger">${fail}✗</span> <span class="text-warning">${skip}⚠</span></small>
+      </div>
+    </div>`;
+  });
+  document.getElementById('progressRow').innerHTML = html;
+}
+
+async function saveAll() {
+  const tabs = ['12','13','16','17','19'];
+  const batch = db.batch();
+
+  tabs.forEach(tab => {
+    CHECKLIST_DATA[tab].items.forEach(item => {
+      const ref = db.collection(COL.CHECKLIST).doc(item.id);
+      batch.set(ref, {
+        tab:      tab,
+        itemId:   item.id,
+        text:     item.text,
+        result:   state[item.id] ? (state[item.id].result || '') : '',
+        note:     state[item.id] ? (state[item.id].note   || '') : '',
+        updatedAt: serverTS()
+      }, { merge: true });
+    });
+  });
+
+  // Save signatures
+  const sigData = {
+    aud1Name:     document.getElementById('aud1Name').value,
+    aud1Pos:      document.getElementById('aud1Pos').value,
+    aud1Date:     document.getElementById('aud1Date').value,
+    aud2Name:     document.getElementById('aud2Name').value,
+    aud2Pos:      document.getElementById('aud2Pos').value,
+    aud2Date:     document.getElementById('aud2Date').value,
+    reviewerName: document.getElementById('reviewerName').value,
+    reviewerPos:  document.getElementById('reviewerPos').value,
+    reviewerDate: document.getElementById('reviewerDate').value,
+    updatedAt:    serverTS()
+  };
+  batch.set(db.collection(COL.CHECKLIST).doc('_signatures'), sigData, { merge: true });
+
+  try {
+    await batch.commit();
+    showToast('บันทึกสำเร็จ ✓');
+  } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
+}
+
+async function loadAll() {
+  try {
+    const snap = await db.collection(COL.CHECKLIST).get();
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (doc.id === '_signatures') {
+        ['aud1Name','aud1Pos','aud1Date','aud2Name','aud2Pos','aud2Date',
+         'reviewerName','reviewerPos','reviewerDate'].forEach(f => {
+          if (d[f] != null && document.getElementById(f)) document.getElementById(f).value = d[f];
+        });
+        return;
+      }
+      state[d.itemId] = { result: d.result || '', note: d.note || '' };
+      const resEl  = document.getElementById('res-' + d.itemId);
+      const noteEl = document.getElementById('note-' + d.itemId);
+      if (resEl)  { resEl.value = d.result || ''; onResultChange(d.itemId); }
+      if (noteEl) noteEl.value = d.note || '';
+    });
+    updateProgress();
+  } catch(e) { console.error(e); }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#c62828' : '#2e7d32';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Build all tabs
+['12','13','16','17','19'].forEach(tab => {
+  document.getElementById('body' + tab).innerHTML = buildTab(tab);
+});
+
+loadAll();
+</script>
+
+<style>
+/* Print: show all tabs, hide tab navigation */
+@media print {
+  .tab-pane { display: block !important; opacity: 1 !important; }
+  .check-select { display: none !important; }
+  .print-badge { display: inline !important; }
+  .form-control { border: none; background: transparent; box-shadow: none; padding: 0; }
+  .check-table { font-size: 8pt; }
+  .page-break-tab { page-break-before: always; }
+}
+</style>
+</body>
+</html>

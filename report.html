@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สรุปผลการตรวจสอบ — IoT Smart Farm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-kat no-print">
+  <a class="navbar-brand font-weight-bold" href="index.html"><i class="fas fa-seedling mr-1"></i> IoT Smart Farm</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav">
+    <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-home mr-1"></i>หน้าหลัก</a></li>
+      <li class="nav-item"><a class="nav-link" href="audit.html"><i class="fas fa-clipboard-list mr-1"></i>แนวการตรวจสอบ</a></li>
+      <li class="nav-item"><a class="nav-link" href="checklist.html"><i class="fas fa-tasks mr-1"></i>Checklist</a></li>
+      <li class="nav-item"><a class="nav-link" href="observe.html"><i class="fas fa-eye mr-1"></i>สังเกตการณ์</a></li>
+      <li class="nav-item"><a class="nav-link active" href="report.html"><i class="fas fa-file-alt mr-1"></i>สรุปผล</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container py-4" id="mainContent">
+
+  <!-- Print Header -->
+  <div class="print-header text-center mb-3">
+    <h4>สรุปผลการตรวจสอบ</h4>
+    <p>โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการ IoT Smart Farm<br>
+    วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ — สำนักตรวจเงินแผ่นดินจังหวัดศรีสะเกษ<br>
+    ปีงบประมาณ 2568 | วงเงิน 4,987,000 บาท</p>
+    <hr>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h5 class="mb-0 font-weight-bold"><i class="fas fa-file-alt text-success mr-2"></i>สรุปผลการตรวจสอบ</h5>
+    <div>
+      <button class="btn btn-kat mr-2" onclick="saveReport()"><i class="fas fa-save mr-1"></i>บันทึก</button>
+      <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
+    </div>
+  </div>
+
+  <!-- 1. ข้อมูลโครงการ -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-info-circle mr-2"></i>1. ข้อมูลโครงการ</div>
+    <div class="card-body" style="font-size:.92rem">
+      <table class="table table-sm table-borderless mb-0">
+        <tr><td class="text-muted" style="width:200px">หน่วยงานที่ตรวจสอบ</td><td>สำนักตรวจเงินแผ่นดินจังหวัดศรีสะเกษ</td>
+            <td class="text-muted" style="width:160px">ปีงบประมาณ</td><td>พ.ศ. 2568</td></tr>
+        <tr><td class="text-muted">หน่วยรับตรวจ</td><td class="font-weight-bold text-success">วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ</td>
+            <td class="text-muted">วงเงินสัญญา</td><td class="font-weight-bold text-danger">4,987,000 บาท</td></tr>
+        <tr><td class="text-muted">ชื่อโครงการ</td>
+            <td colspan="3">โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการเทคโนโลยีอุตสาหกรรมการทำฟาร์มอัจฉริยะเกษตรกรรม IoT ด้วยระบบ APP จำนวน 1 ชุด</td></tr>
+        <tr><td class="text-muted">เลขที่สัญญา</td>
+            <td><input type="text" class="form-control form-control-sm" id="contractNo" placeholder="ระบุเลขที่สัญญา"></td>
+            <td class="text-muted">วันที่ตรวจสอบ</td>
+            <td><input type="text" class="form-control form-control-sm" id="auditDateField" placeholder="DD/MM/BBBB"></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 2. สรุปผล Checklist รายหมวด -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-chart-bar mr-2"></i>2. สรุปผลการตรวจสอบ Checklist รายหมวด</div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0" style="font-size:.88rem" id="reportTable">
+          <thead class="thead-light">
+            <tr>
+              <th>รายการ</th><th>หัวข้อ</th><th class="text-center">ทั้งหมด</th>
+              <th class="text-center text-success">ผ่าน</th>
+              <th class="text-center text-danger">ไม่ผ่าน</th>
+              <th class="text-center text-warning">ไม่ได้ตรวจ</th>
+              <th class="text-center">ผลรวม</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <tr><td colspan="7" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i> กำลังโหลด...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ประเด็นที่พบ (ไม่ผ่าน) -->
+  <div class="card mb-3" id="failCard" style="display:none">
+    <div class="card-header-kat" style="background:linear-gradient(135deg,#c62828,#e53935) !important">
+      <i class="fas fa-exclamation-triangle mr-2"></i>3. ประเด็นที่พบ — รายการไม่ผ่าน
+    </div>
+    <div class="card-body p-0">
+      <table class="table mb-0" style="font-size:.88rem">
+        <thead class="thead-light"><tr><th>รหัส</th><th>รายการตรวจสอบ</th><th>หมายเหตุ</th></tr></thead>
+        <tbody id="failList"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. สรุปผลการตรวจสอบ -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-pen-alt mr-2"></i>4. สรุปผลการตรวจสอบโดยรวม</div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="font-weight-bold">ผลการตรวจสอบโดยรวม</label>
+          <select class="form-control" id="overallResult">
+            <option value="">-- เลือกผลการตรวจสอบ --</option>
+            <option value="ผ่าน">✓ ผ่าน — พัสดุครบถ้วนและตรงตาม TOR</option>
+            <option value="ผ่าน (มีข้อสังเกต)">⚠ ผ่าน (มีข้อสังเกต) — ตรงสเปคแต่มีประเด็นให้ติดตาม</option>
+            <option value="ไม่ผ่าน">✗ ไม่ผ่าน — พัสดุไม่ตรงตาม TOR หรือขาดหลักฐาน</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="font-weight-bold">วันที่รายงาน</label>
+          <input type="text" class="form-control" id="reportDate" placeholder="DD/MM/BBBB">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold">สรุปผลการตรวจสอบ</label>
+        <textarea class="form-control" id="summaryText" rows="6"
+          placeholder="สรุปผลการตรวจสอบโครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการ IoT Smart Farm..."
+          oninput="document.getElementById('summaryPrint').textContent=this.value"></textarea>
+        <div class="textarea-print" id="summaryPrint"
+          style="display:none;font-size:.9rem;line-height:1.8;border:1px solid #ccc;padding:.5rem .75rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:3cm"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold">ข้อสังเกต / ข้อเสนอแนะ</label>
+        <textarea class="form-control" id="remarkText" rows="4"
+          placeholder="ข้อสังเกตและข้อเสนอแนะ..."
+          oninput="document.getElementById('remarkPrint').textContent=this.value"></textarea>
+        <div class="textarea-print" id="remarkPrint"
+          style="display:none;font-size:.9rem;line-height:1.8;border:1px solid #ccc;padding:.5rem .75rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:2cm"></div>
+      </div>
+
+      <div class="form-group mb-0">
+        <label class="font-weight-bold">ข้อสังเกตสำคัญที่ค้นพบ (ถ้ามี)</label>
+        <textarea class="form-control" id="keyFinding" rows="3"
+          placeholder="เช่น ชื่อในทะเบียนคุมพัสดุรายการ 16 ไม่ตรงกับ TOR..."
+          oninput="document.getElementById('keyFindingPrint').textContent=this.value"></textarea>
+        <div class="textarea-print" id="keyFindingPrint"
+          style="display:none;font-size:.9rem;line-height:1.8;border:1px solid #ccc;padding:.5rem .75rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:1.5cm"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ลายมือชื่อ -->
+  <div class="card mb-4">
+    <div class="card-header-kat"><i class="fas fa-signature mr-2"></i>5. ลายมือชื่อ</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <p class="font-weight-600 mb-2">ผู้ตรวจสอบ (1)</p>
+          <div class="sig-block">
+            <div class="form-group"><label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="aud1Name" value="นายอุเด่นศักดิ์ สว่างภพ"></div>
+            <div class="form-group mb-0"><label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="aud1Pos" value="นักวิชาการตรวจเงินแผ่นดินชำนาญการ"></div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="aud1Date" class="form-control-plaintext d-inline" style="width:140px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <p class="font-weight-600 mb-2">ผู้ตรวจสอบ (2)</p>
+          <div class="sig-block">
+            <div class="form-group"><label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="aud2Name" value="นางสาวสุภัทรา ประสานพันธ์"></div>
+            <div class="form-group mb-0"><label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="aud2Pos" value="นักวิชาการตรวจเงินแผ่นดินชำนาญการ"></div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="aud2Date" class="form-control-plaintext d-inline" style="width:140px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <p class="font-weight-600 mb-2">ผู้สอบทาน</p>
+          <div class="sig-block">
+            <div class="form-group"><label>ชื่อ-สกุล</label>
+              <input type="text" class="form-control form-control-sm" id="reviewerName" value="นางสาวลักษณา สุนิพัฒน์"></div>
+            <div class="form-group mb-0"><label>ตำแหน่ง</label>
+              <input type="text" class="form-control form-control-sm" id="reviewerPos" value="ผู้อำนวยการกลุ่ม"></div>
+            <div class="sig-line mt-3"></div>
+            <small class="text-muted">วันที่ <input type="text" id="reviewerDate" class="form-control-plaintext d-inline" style="width:140px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+async function loadChecklistSummary() {
+  try {
+    const snap = await db.collection(COL.CHECKLIST).get();
+    const results = {};
+    const failItems = [];
+    snap.forEach(doc => {
+      const d = doc.data();
+      if (doc.id === '_signatures') return;
+      const tab = d.tab;
+      if (!results[tab]) results[tab] = { pass:0, fail:0, skip:0 };
+      if (d.result === 'ผ่าน')          results[tab].pass++;
+      else if (d.result === 'ไม่ผ่าน')  { results[tab].fail++; failItems.push(d); }
+      else if (d.result === 'ไม่ได้ตรวจ') results[tab].skip++;
+    });
+
+    const tabs = ['12','13','16','17','19'];
+    let html = '';
+    let totalPass=0, totalFail=0, totalSkip=0, totalAll=0;
+    tabs.forEach(tab => {
+      const total = CHECKLIST_DATA[tab].items.length;
+      const r = results[tab] || { pass:0, fail:0, skip:0 };
+      totalAll += total; totalPass += r.pass; totalFail += r.fail; totalSkip += r.skip;
+      const done = r.pass + r.fail + r.skip;
+      const overall = r.fail > 0 ? '<span class="badge badge-danger">มีประเด็น</span>'
+                    : done === 0 ? '<span class="badge badge-secondary">ยังไม่บันทึก</span>'
+                    : '<span class="badge badge-success">ผ่าน</span>';
+      html += `<tr>
+        <td><span class="badge badge-secondary">รายการ ${tab}</span></td>
+        <td style="font-size:.83rem">${CHECKLIST_DATA[tab].title.replace(/รายการที่ \d+ — /,'')}</td>
+        <td class="text-center">${total}</td>
+        <td class="text-center"><strong class="text-success">${r.pass}</strong></td>
+        <td class="text-center"><strong class="text-danger">${r.fail}</strong></td>
+        <td class="text-center text-warning">${r.skip}</td>
+        <td class="text-center">${overall}</td>
+      </tr>`;
+    });
+    html += `<tr class="font-weight-bold bg-light">
+      <td colspan="2">รวม</td>
+      <td class="text-center">${totalAll}</td>
+      <td class="text-center text-success">${totalPass}</td>
+      <td class="text-center text-danger">${totalFail}</td>
+      <td class="text-center text-warning">${totalSkip}</td>
+      <td class="text-center">${totalFail>0?'<span class="badge badge-danger">มีประเด็น</span>':'<span class="badge badge-success">ผ่าน</span>'}</td>
+    </tr>`;
+    document.getElementById('reportTableBody').innerHTML = html;
+
+    // Show fail items
+    if (failItems.length > 0) {
+      document.getElementById('failCard').style.display = '';
+      let fhtml = '';
+      failItems.forEach(it => {
+        fhtml += `<tr><td class="text-danger font-weight-bold">${it.itemId}</td>
+          <td style="font-size:.85rem">${it.text}</td>
+          <td style="font-size:.85rem">${it.note || '—'}</td></tr>`;
+      });
+      document.getElementById('failList').innerHTML = fhtml;
+    }
+  } catch(e) { console.error(e); }
+}
+
+async function saveReport() {
+  const data = {
+    contractNo:    document.getElementById('contractNo').value,
+    auditDateField:document.getElementById('auditDateField').value,
+    overallResult: document.getElementById('overallResult').value,
+    reportDate:    document.getElementById('reportDate').value,
+    summaryText:   document.getElementById('summaryText').value,
+    remarkText:    document.getElementById('remarkText').value,
+    keyFinding:    document.getElementById('keyFinding').value,
+    aud1Name:      document.getElementById('aud1Name').value,
+    aud1Pos:       document.getElementById('aud1Pos').value,
+    aud1Date:      document.getElementById('aud1Date').value,
+    aud2Name:      document.getElementById('aud2Name').value,
+    aud2Pos:       document.getElementById('aud2Pos').value,
+    aud2Date:      document.getElementById('aud2Date').value,
+    reviewerName:  document.getElementById('reviewerName').value,
+    reviewerPos:   document.getElementById('reviewerPos').value,
+    reviewerDate:  document.getElementById('reviewerDate').value,
+    updatedAt:     serverTS()
+  };
+  try {
+    await db.collection(COL.SUMMARY).doc('main').set(data, { merge: true });
+    showToast('บันทึกสำเร็จ ✓');
+  } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
+}
+
+async function loadReport() {
+  try {
+    const doc = await db.collection(COL.SUMMARY).doc('main').get();
+    if (doc.exists) {
+      const d = doc.data();
+      const fields = ['contractNo','auditDateField','overallResult','reportDate','summaryText',
+        'remarkText','keyFinding','aud1Name','aud1Pos','aud1Date','aud2Name','aud2Pos','aud2Date',
+        'reviewerName','reviewerPos','reviewerDate'];
+      fields.forEach(f => {
+        const el = document.getElementById(f);
+        if (el && d[f] != null) el.value = d[f];
+      });
+      // Sync print divs
+      ['summaryText','remarkText','keyFinding'].forEach(id => {
+        const el = document.getElementById(id);
+        const pr = document.getElementById(id.replace('Text','Print').replace('Text','Print').replace('Finding','FindingPrint'));
+        // map manually
+      });
+      document.getElementById('summaryPrint').textContent    = d.summaryText  || '';
+      document.getElementById('remarkPrint').textContent     = d.remarkText   || '';
+      document.getElementById('keyFindingPrint').textContent = d.keyFinding   || '';
+    }
+  } catch(e) { console.error(e); }
+}
+
+// Load project contract no
+async function loadProject() {
+  const doc = await db.collection(COL.PROJECT).doc('main').get();
+  if (doc.exists && doc.data().contractNo) {
+    document.getElementById('contractNo').value = doc.data().contractNo;
+  }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#c62828' : '#2e7d32';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+loadProject();
+loadReport();
+loadChecklistSummary();
+</script>
+</body>
+</html>

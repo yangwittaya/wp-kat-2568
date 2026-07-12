@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>กระดาษทำการสังเกตการณ์ — IoT Smart Farm</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-kat no-print">
+  <a class="navbar-brand font-weight-bold" href="index.html"><i class="fas fa-seedling mr-1"></i> IoT Smart Farm</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav">
+    <span class="navbar-toggler-icon" style="filter:invert(1)"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="nav">
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item"><a class="nav-link" href="index.html"><i class="fas fa-home mr-1"></i>หน้าหลัก</a></li>
+      <li class="nav-item"><a class="nav-link" href="audit.html"><i class="fas fa-clipboard-list mr-1"></i>แนวการตรวจสอบ</a></li>
+      <li class="nav-item"><a class="nav-link" href="checklist.html"><i class="fas fa-tasks mr-1"></i>Checklist</a></li>
+      <li class="nav-item"><a class="nav-link active" href="observe.html"><i class="fas fa-eye mr-1"></i>สังเกตการณ์</a></li>
+      <li class="nav-item"><a class="nav-link" href="report.html"><i class="fas fa-file-alt mr-1"></i>สรุปผล</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container py-3" id="mainContent">
+
+  <!-- Print Header -->
+  <div class="print-header text-center mb-3">
+    <h4>กระดาษทำการสังเกตการณ์</h4>
+    <p>โครงการจัดซื้อครุภัณฑ์ห้องปฏิบัติการ IoT Smart Farm<br>
+    วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ — สำนักตรวจเงินแผ่นดินจังหวัดศรีสะเกษ</p>
+    <hr>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h5 class="mb-0 font-weight-bold"><i class="fas fa-eye text-success mr-2"></i>กระดาษทำการสังเกตการณ์</h5>
+    <div>
+      <button class="btn btn-kat mr-2" onclick="saveObserve()"><i class="fas fa-save mr-1"></i>บันทึก</button>
+      <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
+    </div>
+  </div>
+
+  <!-- Observe Info -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-info-circle mr-2"></i>1. ข้อมูลการสังเกตการณ์</div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>หน่วยรับตรวจ</label>
+            <input type="text" class="form-control" id="obsUnit" value="วิทยาลัยเกษตรและเทคโนโลยีศรีสะเกษ" readonly>
+          </div>
+          <div class="form-group">
+            <label>สถานที่สังเกตการณ์</label>
+            <input type="text" class="form-control" id="obsLocation" placeholder="ระบุสถานที่...">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>วันที่สังเกตการณ์</label>
+            <input type="text" class="form-control" id="obsDate" placeholder="DD/MM/BBBB">
+          </div>
+          <div class="form-group">
+            <label>เวลา</label>
+            <input type="text" class="form-control" id="obsTime" placeholder="เช่น 09.00–16.00 น.">
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group mb-0">
+            <label>ผู้เข้าร่วมจากหน่วยรับตรวจ (คนที่ 1)</label>
+            <input type="text" class="form-control" id="unitRep1" placeholder="ชื่อ-สกุล ตำแหน่ง">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group mb-0">
+            <label>ผู้เข้าร่วมจากหน่วยรับตรวจ (คนที่ 2)</label>
+            <input type="text" class="form-control" id="unitRep2" placeholder="ชื่อ-สกุล ตำแหน่ง">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Objectives -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-bullseye mr-2"></i>2. วัตถุประสงค์การสังเกตการณ์</div>
+    <div class="card-body" style="font-size:.93rem">
+      <ol>
+        <li>สังเกตกระบวนการตรวจรับพัสดุว่าเป็นไปตามขั้นตอนที่กำหนดหรือไม่</li>
+        <li>ตรวจสอบพัสดุว่ามีคุณลักษณะตรงตามสัญญา/TOR ในรายการความเสี่ยงสูง</li>
+        <li>บันทึกข้อเท็จจริงและข้อสังเกตเพื่อใช้ประกอบรายงานผลการตรวจสอบ</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Observation Sections - dynamically built from config -->
+  <div id="obsBody"></div>
+
+  <!-- Overall Summary -->
+  <div class="card mb-3">
+    <div class="card-header-kat"><i class="fas fa-clipboard-check mr-2"></i>4. สรุปผลการสังเกตการณ์ภาพรวม</div>
+    <div class="card-body">
+      <div class="form-group">
+        <label class="font-weight-bold">ข้อสรุปภาพรวม</label>
+        <textarea class="form-control" id="overallSummary" rows="4"
+          placeholder="สรุปผลการสังเกตการณ์โดยรวม..."
+          oninput="document.getElementById('overallSummaryPrint').textContent=this.value"></textarea>
+        <div class="textarea-print" id="overallSummaryPrint" style="display:none;font-size:.9rem;border:1px solid #ccc;padding:.4rem .75rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:2cm"></div>
+      </div>
+      <div class="form-group mb-0">
+        <label class="font-weight-bold">ประเด็นที่ต้องดำเนินการต่อ / ขอหลักฐานเพิ่มเติม</label>
+        <textarea class="form-control" id="followUpNote" rows="3"
+          placeholder="ประเด็นที่ต้องติดตามต่อ..."
+          oninput="document.getElementById('followUpNotePrint').textContent=this.value"></textarea>
+        <div class="textarea-print" id="followUpNotePrint" style="display:none;font-size:.9rem;border:1px solid #ccc;padding:.4rem .75rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:1.5cm"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Signatures -->
+  <div class="card mb-4">
+    <div class="card-header-kat d-flex justify-content-between align-items-center">
+      <span><i class="fas fa-users mr-2"></i>5. ลายมือชื่อคณะผู้สังเกตการณ์</span>
+      <div class="no-print">
+        <button class="btn btn-sm btn-light mr-1" onclick="addSigner()"><i class="fas fa-plus mr-1"></i>เพิ่มผู้ลงนาม</button>
+        <button class="btn btn-sm btn-outline-light" onclick="removeSigner()"><i class="fas fa-minus mr-1"></i>ลดผู้ลงนาม</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="signerList" class="row"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="config.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ===== Observation Rendering =====
+function buildObsSections() {
+  let html = '<h6 class="font-weight-bold mb-2"><i class="fas fa-search text-success mr-2"></i>3. ข้อสังเกตและสิ่งที่พบ</h6>';
+  OBS_SECTIONS.forEach(section => {
+    html += `<div class="card mb-3">
+      <div class="card-header-kat" style="font-size:.9rem">
+        <i class="fas fa-angle-right mr-1"></i>${section.id} ${section.title}
+      </div>
+      <div class="card-body">`;
+
+    section.points.forEach(point => {
+      html += `
+        <div class="obs-row" id="obs-${point.id}">
+          <div class="d-flex align-items-start">
+            <span class="obs-id mr-3">${point.id}</span>
+            <div class="flex-grow-1">
+              <p class="mb-1 font-weight-600" style="font-size:.9rem">${point.title}</p>
+              <div class="criterion-box mb-2">
+                <i class="fas fa-check-circle text-success mr-1"></i>
+                <strong>สิ่งที่ควรจะเป็น:</strong> ${point.criterion}
+              </div>
+              <div class="row">
+                <div class="col-md-8">
+                  <label style="font-size:.83rem;color:#555">สิ่งที่พบ</label>
+                  <textarea class="form-control form-control-sm" id="finding-${point.id}" rows="2"
+                    placeholder="บันทึกสิ่งที่พบจากการสังเกตการณ์..."
+                    oninput="document.getElementById('finding-print-${point.id}').textContent=this.value"></textarea>
+                  <div class="textarea-print" id="finding-print-${point.id}"
+                    style="display:none;font-size:.85rem;border:1px solid #ccc;padding:.3rem .6rem;background:white;white-space:pre-wrap;word-break:break-word;min-height:1cm"></div>
+                </div>
+                <div class="col-md-4">
+                  <label style="font-size:.83rem;color:#555">สรุปผล</label>
+                  <select class="form-control form-control-sm" id="result-${point.id}">
+                    <option value="">-- เลือก --</option>
+                    <option value="สอดคล้อง">✓ สอดคล้อง</option>
+                    <option value="ไม่สอดคล้อง">✗ ไม่สอดคล้อง</option>
+                    <option value="ต้องตรวจสอบเพิ่มเติม">⚠ ต้องตรวจสอบเพิ่มเติม</option>
+                  </select>
+                  <!-- Print badge -->
+                  <div class="textarea-print" id="result-print-${point.id}" style="display:none;margin-top:.3rem;font-size:.85rem"></div>
+                </div>
+              </div>
+
+              <!-- Photo Upload -->
+              <div class="mt-2 no-print">
+                <label style="font-size:.83rem;color:#555"><i class="fas fa-camera mr-1"></i>รูปถ่าย/วิดีโอ</label>
+                <div class="d-flex align-items-center flex-wrap gap-2">
+                  <div class="upload-btn-wrap mr-2">
+                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-upload mr-1"></i>อัปโหลด</button>
+                    <input type="file" accept="image/*,video/*" multiple onchange="uploadFiles(event, '${point.id}')">
+                  </div>
+                  <div class="photo-grid" id="photos-${point.id}"></div>
+                </div>
+              </div>
+              <!-- Photos for print -->
+              <div class="textarea-print" id="photos-print-${point.id}" style="display:none;"></div>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+  document.getElementById('obsBody').innerHTML = html;
+}
+
+// ===== Photo Upload =====
+async function uploadFiles(event, pointId) {
+  const files = event.target.files;
+  if (!files.length) return;
+
+  for (let file of files) {
+    try {
+      const ts  = Date.now();
+      const ref = storage.ref(`katObserve/${pointId}/${ts}_${file.name}`);
+      const snap = await ref.put(file);
+      const url  = await snap.ref.getDownloadURL();
+
+      // Save URL to Firestore
+      await db.collection(COL.OBSERVE).doc(pointId).set({
+        files: firebase.firestore.FieldValue.arrayUnion({ url, name: file.name, type: file.type })
+      }, { merge: true });
+
+      addPhotoThumb(pointId, url, file.type);
+      showToast('อัปโหลดสำเร็จ ✓');
+    } catch(e) {
+      showToast('อัปโหลดไม่สำเร็จ: ' + e.message, true);
+    }
+  }
+}
+
+function addPhotoThumb(pointId, url, type) {
+  const grid = document.getElementById('photos-' + pointId);
+  const printGrid = document.getElementById('photos-print-' + pointId);
+  if (!grid) return;
+
+  let el, printEl;
+  if (type && type.startsWith('video')) {
+    el = document.createElement('a');
+    el.href = url; el.target='_blank';
+    el.innerHTML = `<div style="width:100px;height:80px;background:#e8f5e9;border:2px solid #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--green)"><i class="fas fa-film"></i></div>`;
+    printEl = document.createElement('div');
+    printEl.innerHTML = `<small>VDO: <a href="${url}">${url.substring(0,50)}...</a></small>`;
+  } else {
+    el = document.createElement('img');
+    el.src = url; el.className = 'photo-thumb';
+    el.onclick = () => window.open(url, '_blank');
+    printEl = document.createElement('img');
+    printEl.src = url;
+    printEl.style.cssText = 'width:2.5cm;height:2cm;object-fit:cover;margin:2px;border:1px solid #ccc;';
+  }
+
+  grid.appendChild(el);
+  if (printGrid) printGrid.appendChild(printEl);
+}
+
+// ===== Dynamic Signatures =====
+let signerCount = 0;
+
+function addSigner(name='', pos='', date='') {
+  if (signerCount >= 8) { showToast('สูงสุด 8 ลายชื่อ', true); return; }
+  signerCount++;
+  const idx = signerCount;
+  const col = document.createElement('div');
+  col.className = 'col-md-3 mb-3';
+  col.id = 'signer-' + idx;
+  col.innerHTML = `
+    <div class="sig-block" style="min-height:200px">
+      <div class="form-group">
+        <label style="font-size:.82rem">ลำดับที่ ${idx} — ชื่อ-สกุล</label>
+        <input type="text" class="form-control form-control-sm" id="sn-${idx}" value="${name}" placeholder="ชื่อ-สกุล">
+      </div>
+      <div class="form-group mb-0">
+        <label style="font-size:.82rem">ตำแหน่ง</label>
+        <input type="text" class="form-control form-control-sm" id="sp-${idx}" value="${pos}" placeholder="ตำแหน่ง">
+      </div>
+      <div class="sig-line mt-3"></div>
+      <small class="text-muted">วันที่ <input type="text" id="sd-${idx}" class="form-control-plaintext d-inline" value="${date}" style="width:120px;border-bottom:1px solid #999" placeholder="DD/MM/BBBB"></small>
+    </div>`;
+  document.getElementById('signerList').appendChild(col);
+}
+
+function removeSigner() {
+  if (signerCount < 1) return;
+  const el = document.getElementById('signer-' + signerCount);
+  if (el) el.remove();
+  signerCount--;
+}
+
+function getSigners() {
+  const arr = [];
+  for (let i = 1; i <= signerCount; i++) {
+    arr.push({
+      name: (document.getElementById('sn-' + i) || {}).value || '',
+      pos:  (document.getElementById('sp-' + i) || {}).value || '',
+      date: (document.getElementById('sd-' + i) || {}).value || '',
+    });
+  }
+  return arr;
+}
+
+// ===== Save =====
+async function saveObserve() {
+  const summaryData = {
+    obsLocation:    document.getElementById('obsLocation').value,
+    obsDate:        document.getElementById('obsDate').value,
+    obsTime:        document.getElementById('obsTime').value,
+    unitRep1:       document.getElementById('unitRep1').value,
+    unitRep2:       document.getElementById('unitRep2').value,
+    overallSummary: document.getElementById('overallSummary').value,
+    followUpNote:   document.getElementById('followUpNote').value,
+    signers:        getSigners(),
+    updatedAt:      serverTS()
+  };
+
+  // Collect all observation points
+  const obs = {};
+  OBS_SECTIONS.forEach(sec => {
+    sec.points.forEach(pt => {
+      obs[pt.id] = {
+        finding: (document.getElementById('finding-' + pt.id) || {}).value || '',
+        result:  (document.getElementById('result-' + pt.id) || {}).value || '',
+      };
+    });
+  });
+
+  try {
+    const batch = db.batch();
+    batch.set(db.collection(COL.OBS_SUMMARY).doc('main'), summaryData, { merge: true });
+    Object.keys(obs).forEach(id => {
+      batch.set(db.collection(COL.OBSERVE).doc(id), {
+        pointId: id, ...obs[id], updatedAt: serverTS()
+      }, { merge: true });
+    });
+    await batch.commit();
+    showToast('บันทึกสำเร็จ ✓');
+  } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
+}
+
+// ===== Load =====
+async function loadObserve() {
+  try {
+    // Load summary
+    const sumDoc = await db.collection(COL.OBS_SUMMARY).doc('main').get();
+    if (sumDoc.exists) {
+      const d = sumDoc.data();
+      ['obsLocation','obsDate','obsTime','unitRep1','unitRep2','overallSummary','followUpNote'].forEach(f => {
+        const el = document.getElementById(f);
+        if (el && d[f] != null) el.value = d[f];
+      });
+      document.getElementById('overallSummaryPrint').textContent = d.overallSummary || '';
+      document.getElementById('followUpNotePrint').textContent   = d.followUpNote   || '';
+
+      // Restore signers
+      if (d.signers && d.signers.length > 0) {
+        d.signers.forEach(s => addSigner(s.name, s.pos, s.date));
+      } else {
+        DEFAULT_OBSERVERS.forEach(o => addSigner(o.name, o.position));
+      }
+    } else {
+      // First load: add default observers
+      DEFAULT_OBSERVERS.forEach(o => addSigner(o.name, o.position));
+    }
+
+    // Load observation points
+    const obsSnap = await db.collection(COL.OBSERVE).get();
+    obsSnap.forEach(doc => {
+      const d = doc.data();
+      if (!d.pointId) return;
+      const findEl = document.getElementById('finding-' + d.pointId);
+      const resEl  = document.getElementById('result-' + d.pointId);
+      if (findEl) {
+        findEl.value = d.finding || '';
+        document.getElementById('finding-print-' + d.pointId).textContent = d.finding || '';
+      }
+      if (resEl)  resEl.value = d.result || '';
+      if (d.result) {
+        const rp = document.getElementById('result-print-' + d.pointId);
+        if (rp) rp.textContent = d.result;
+      }
+
+      // Load photos
+      if (d.files && d.files.length > 0) {
+        d.files.forEach(f => addPhotoThumb(d.pointId, f.url, f.type));
+      }
+    });
+  } catch(e) { console.error(e); }
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#c62828' : '#2e7d32';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Init
+buildObsSections();
+loadObserve();
+</script>
+
+<style>
+@media print {
+  .obs-row { break-inside: avoid; }
+  .obs-row select { display: none !important; }
+}
+</style>
+</body>
+</html>
