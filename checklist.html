@@ -116,12 +116,17 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
+// Auto-resize textarea
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
 // In-memory state
 const state = {}; // { "12.1": { result:"ผ่าน", note:"..." }, ... }
 
@@ -164,8 +169,14 @@ function buildTab(tab) {
           <!-- Print view -->
           <span class="print-badge d-none" id="badge-${item.id}"></span>
         </td>
-        <td><input type="text" class="form-control form-control-sm" id="note-${item.id}"
-          placeholder="หมายเหตุ..." onchange="onNoteChange('${item.id}')" style="font-size:.8rem"></td>
+        <td>
+          <textarea class="form-control form-control-sm" id="note-${item.id}"
+            rows="1" style="overflow-y:hidden;resize:none;font-size:.8rem"
+            placeholder="หมายเหตุ..."
+            oninput="autoResize(this);onNoteChange('${item.id}')"></textarea>
+          <div class="note-print" id="noteprint-${item.id}"
+            style="display:none;font-size:.8rem;white-space:pre-wrap;word-break:break-word;min-height:.6cm"></div>
+        </td>
       </tr>`;
   });
 
@@ -199,7 +210,10 @@ function onResultChange(id) {
 
 function onNoteChange(id) {
   if (!state[id]) state[id] = {};
-  state[id].note = document.getElementById('note-' + id).value;
+  const val = document.getElementById('note-' + id).value;
+  state[id].note = val;
+  const printEl = document.getElementById('noteprint-' + id);
+  if (printEl) printEl.textContent = val;
 }
 
 function updateProgress() {
@@ -283,7 +297,12 @@ async function loadAll() {
       const resEl  = document.getElementById('res-' + d.itemId);
       const noteEl = document.getElementById('note-' + d.itemId);
       if (resEl)  { resEl.value = d.result || ''; onResultChange(d.itemId); }
-      if (noteEl) noteEl.value = d.note || '';
+      if (noteEl) {
+        noteEl.value = d.note || '';
+        autoResize(noteEl);
+        const printEl = document.getElementById('noteprint-' + d.itemId);
+        if (printEl) printEl.textContent = d.note || '';
+      }
     });
     updateProgress();
   } catch(e) { console.error(e); }
@@ -314,6 +333,9 @@ loadAll();
   .form-control { border: none; background: transparent; box-shadow: none; padding: 0; }
   .check-table { font-size: 8pt; }
   .page-break-tab { page-break-before: always; }
+  /* หมายเหตุ: ซ่อน textarea แสดง print div แทน */
+  textarea.form-control { display: none !important; }
+  .note-print { display: block !important; }
 }
 </style>
 </body>
