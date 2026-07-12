@@ -146,8 +146,13 @@
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="config.js"></script>
+
+<!-- Cloudinary config -->
+<script>
+const CLOUDINARY_CLOUD = 'demouhbhu';
+const CLOUDINARY_PRESET = 'wp_kat_unsigned';
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 
@@ -218,17 +223,31 @@ function buildObsSections() {
   document.getElementById('obsBody').innerHTML = html;
 }
 
-// ===== Photo Upload =====
+// ===== Photo Upload (Cloudinary) =====
 async function uploadFiles(event, pointId) {
   const files = event.target.files;
   if (!files.length) return;
 
   for (let file of files) {
     try {
-      const ts  = Date.now();
-      const ref = storage.ref(`katObserve/${pointId}/${ts}_${file.name}`);
-      const snap = await ref.put(file);
-      const url  = await snap.ref.getDownloadURL();
+      showToast('กำลังอัปโหลด...');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_PRESET);
+      formData.append('folder', 'katObserve/' + pointId);
+
+      const isVideo = file.type.startsWith('video');
+      const endpoint = isVideo
+        ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`
+        : `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
+
+      const res  = await fetch(endpoint, { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (!res.ok || data.error) throw new Error(data.error?.message || 'Upload failed');
+
+      const url = data.secure_url;
 
       // Save URL to Firestore
       await db.collection(COL.OBSERVE).doc(pointId).set({
