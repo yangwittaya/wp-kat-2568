@@ -153,9 +153,11 @@ function buildTab(tab) {
             <tbody>`;
 
   items.forEach(item => {
+    const flagRow = item.flagged ? ' style="background:#fdecea"' : '';
+    const flagBadge = item.flagged ? '<span class="badge badge-danger ml-1" title="ควรตรวจสอบ/ยืนยันกับ TOR ต้นฉบับอีกครั้งก่อนใช้เป็นเกณฑ์ตายตัว">⚠ ตรวจสอบ</span>' : '';
     html += `
-      <tr id="row-${item.id}">
-        <td class="font-weight-bold text-success" style="font-size:.8rem">${item.id}</td>
+      <tr id="row-${item.id}"${flagRow}>
+        <td class="font-weight-bold text-success" style="font-size:.8rem">${item.id}${flagBadge}</td>
         <td style="font-size:.82rem">${item.text}</td>
         <td style="font-size:.78rem;color:#555">${item.spec}</td>
         <td style="font-size:.78rem;color:#555">${item.method}</td>
