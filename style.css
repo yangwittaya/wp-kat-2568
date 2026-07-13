@@ -166,24 +166,34 @@ body {
   margin-top: 4px;
 }
 
-/* ===== Photo print blocks (ขนาดเท่าเอกสาร) ===== */
+/* ===== Photo print grid: กล่องแนวนอน ขนาด ~1/4 หน้า A4 ต่อรูป ไม่ตัดภาพ ===== */
+.photo-print-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4cm;
+}
 .photo-print-block {
-  margin-bottom: .8cm;
+  width: 8.3cm;         /* 2 กล่องต่อแถว ~เต็มความกว้างพิมพ์ 17cm */
+  margin-bottom: .4cm;
   page-break-inside: avoid;
+  break-inside: avoid;
   text-align: center;
+  border: 1px solid #ccc;
+  padding: .2cm;
+  box-sizing: border-box;
 }
 .photo-print-img {
   width: 100%;
-  max-width: 17cm;
-  height: auto;
+  height: 6cm;          /* แนวนอน ล็อคขนาดคงที่ ~1/4 ของหน้า A4 */
+  object-fit: contain;  /* แสดงภาพเต็มใบ ไม่ตัดขอบภาพ */
   display: block;
   margin: 0 auto;
-  border: 1px solid #ccc;
+  background: #f5f5f5;
 }
 .photo-print-caption {
-  font-size: 10pt;
+  font-size: 9pt;
   color: #333;
-  margin-top: .2cm;
+  margin-top: .15cm;
   text-align: left;
   white-space: pre-wrap;
   word-break: break-word;
@@ -270,8 +280,10 @@ textarea.form-control { resize: vertical; }
   .textarea-print { display: block !important; }
   textarea        { display: none !important; }
 
+  /* กล่องรูปภาพตอนพิมพ์: แนวนอน ~1/4 หน้า A4 ต่อรูป จัดเป็นกริด 2 คอลัมน์ */
+  .photo-print-grid { display: flex !important; }
+
   .sig-block { break-inside: avoid; }
-  .photo-thumb { width: 2.5cm; height: 2cm; }
 
   .page-break { page-break-after: always; }
 }
