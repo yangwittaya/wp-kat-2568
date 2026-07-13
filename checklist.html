@@ -27,7 +27,7 @@
   </div>
 </nav>
 
-<div class="container-fluid py-3 px-4">
+<div class="container-fluid py-3 px-4" id="mainContent">
 
   <!-- Print Header -->
   <div class="print-header text-center mb-3">
@@ -45,6 +45,8 @@
     </h5>
     <div>
       <button class="btn btn-sm btn-success mr-1" onclick="saveAll()"><i class="fas fa-save mr-1"></i>บันทึกทั้งหมด</button>
+      <button class="btn btn-sm btn-outline-primary mr-1" onclick="exportChecklistWord()"><i class="fas fa-file-word mr-1"></i>Word</button>
+      <button class="btn btn-sm btn-outline-success mr-1" onclick="exportChecklistExcel()"><i class="fas fa-file-excel mr-1"></i>Excel</button>
       <button class="btn btn-sm btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
     </div>
   </div>
@@ -119,6 +121,8 @@
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="export.js"></script>
 
 <script>
 // Auto-resize textarea
@@ -143,11 +147,11 @@ function buildTab(tab) {
             <thead>
               <tr>
                 <th style="width:60px">รหัส</th>
-                <th>รายการตรวจสอบ</th>
+                <th style="width:220px">รายการตรวจสอบ</th>
                 <th style="width:160px">คุณลักษณะที่กำหนด</th>
-                <th style="width:150px">วิธีการตรวจ</th>
+                <th style="width:300px">วิธีการตรวจ</th>
                 <th style="width:130px" class="text-center">ผลการตรวจ</th>
-                <th>หมายเหตุ</th>
+                <th style="width:400px">หมายเหตุ</th>
               </tr>
             </thead>
             <tbody>`;
@@ -324,6 +328,40 @@ function showToast(msg, err=false) {
 });
 
 loadAll();
+
+// ===== Export: Excel (data-model based, ครบทุกแท็บ/712 รายการ) =====
+function exportChecklistExcel() {
+  if (typeof XLSX === 'undefined') { showToast('ไม่พบไลบรารี XLSX', true); return; }
+  const wb = XLSX.utils.book_new();
+  ['12','13','16','17','19'].forEach(tab => {
+    const items = CHECKLIST_DATA[tab].items;
+    const rows = [['ลำดับ','รหัส','รายการตรวจสอบ','คุณลักษณะที่กำหนด (สเปค)','วิธีการตรวจสอบ','ผลการตรวจ','หมายเหตุ/ผลการทดสอบ']];
+    items.forEach((it, i) => {
+      const st = state[it.id] || {};
+      rows.push([i+1, it.id, it.text, it.spec, it.method, st.result || '', st.note || '']);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:6},{wch:16},{wch:45},{wch:40},{wch:45},{wch:12},{wch:30}];
+    XLSX.utils.book_append_sheet(wb, ws, 'รายการ' + tab);
+  });
+  XLSX.writeFile(wb, 'กระดาษทำการ_Checklist_IoT_Smart_Farm.xlsx');
+  showToast('ดาวน์โหลด Excel สำเร็จ ✓');
+}
+
+// ===== Export: Word (ต้องบังคับให้ทุกแท็บแสดงผลก่อน clone) =====
+function exportChecklistWord() {
+  exportWord('mainContent', 'กระดาษทำการ_Checklist_IoT_Smart_Farm', 'กระดาษทำการ Checklist ตรวจรับพัสดุ IoT Smart Farm', () => {
+    const panes = document.querySelectorAll('#tabContent .tab-pane');
+    panes.forEach(p => { p.dataset._prevClass = p.className; p.classList.add('show', 'active'); p.style.display = 'block'; });
+    const tabs = document.getElementById('checkTabs');
+    const prevTabsDisplay = tabs.style.display;
+    tabs.style.display = 'none';
+    return () => {
+      panes.forEach(p => { p.className = p.dataset._prevClass; p.style.display = ''; delete p.dataset._prevClass; });
+      tabs.style.display = prevTabsDisplay;
+    };
+  });
+}
 </script>
 
 <style>

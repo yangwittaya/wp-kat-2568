@@ -154,9 +154,10 @@ body {
 }
 
 /* ===== Checklist table ===== */
+.check-table { table-layout: fixed; }
 .check-table th { background: var(--green-bg); font-weight: 600; }
 .check-table tr:hover { background: #f1f8f1; }
-.check-table td, .check-table th { vertical-align: middle; }
+.check-table td, .check-table th { vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; }
 .check-select {
   min-width: 110px;
   border-radius: 6px;

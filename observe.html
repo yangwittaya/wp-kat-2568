@@ -42,6 +42,8 @@
     <h5 class="mb-0 font-weight-bold"><i class="fas fa-eye text-success mr-2"></i>กระดาษทำการสังเกตการณ์</h5>
     <div>
       <button class="btn btn-kat mr-2" onclick="saveObserve()"><i class="fas fa-save mr-1"></i>บันทึก</button>
+      <button class="btn btn-outline-primary mr-2" onclick="exportWord('mainContent','กระดาษทำการสังเกตการณ์_IoT_Smart_Farm','กระดาษทำการสังเกตการณ์ IoT Smart Farm')"><i class="fas fa-file-word mr-1"></i>Word</button>
+      <button class="btn btn-outline-success mr-2" onclick="exportObserveExcel()"><i class="fas fa-file-excel mr-1"></i>Excel</button>
       <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
     </div>
   </div>
@@ -155,6 +157,8 @@ const CLOUDINARY_PRESET = 'wp_kat_unsigned';
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="export.js"></script>
 
 <script>
 // ===== Auto-resize textarea =====
@@ -439,6 +443,61 @@ function showToast(msg, err=false) {
 // Init
 buildObsSections();
 loadObserve();
+
+// ===== Export: Excel (โครงสร้างจาก OBS_SECTIONS + ค่าปัจจุบันในหน้า) =====
+function exportObserveExcel() {
+  if (typeof XLSX === 'undefined') { showToast('ไม่พบไลบรารี XLSX', true); return; }
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: ข้อมูลทั่วไป
+  const infoRows = [['หัวข้อ','ค่า'],
+    ['หน่วยรับตรวจ', document.getElementById('obsUnit').value],
+    ['สถานที่สังเกตการณ์', document.getElementById('obsLocation').value],
+    ['วันที่สังเกตการณ์', document.getElementById('obsDate').value],
+    ['เวลา', document.getElementById('obsTime').value],
+    ['ผู้เข้าร่วมจากหน่วยรับตรวจ (1)', document.getElementById('unitRep1').value],
+    ['ผู้เข้าร่วมจากหน่วยรับตรวจ (2)', document.getElementById('unitRep2').value],
+  ];
+  const wsInfo = XLSX.utils.aoa_to_sheet(infoRows);
+  wsInfo['!cols'] = [{wch:32},{wch:50}];
+  XLSX.utils.book_append_sheet(wb, wsInfo, 'ข้อมูลทั่วไป');
+
+  // Sheet 2: ข้อสังเกตและสิ่งที่พบ (รวมทุกหัวข้อ)
+  const obsRows = [['หัวข้อ','รหัส','ประเด็น','สิ่งที่ควรจะเป็น','สิ่งที่พบ','สรุปผล']];
+  OBS_SECTIONS.forEach(section => {
+    section.points.forEach(point => {
+      const findEl = document.getElementById('finding-' + point.id);
+      const resEl  = document.getElementById('result-' + point.id);
+      obsRows.push([
+        section.id + ' ' + section.title,
+        point.id,
+        point.title,
+        point.criterion,
+        findEl ? findEl.value : '',
+        resEl ? resEl.value : '',
+      ]);
+    });
+  });
+  const wsObs = XLSX.utils.aoa_to_sheet(obsRows);
+  wsObs['!cols'] = [{wch:30},{wch:10},{wch:40},{wch:55},{wch:40},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsObs, 'ข้อสังเกตและสิ่งที่พบ');
+
+  // Sheet 3: สรุปภาพรวม + ลายมือชื่อ
+  const signers = getSigners();
+  const summaryRows = [['หัวข้อ','ค่า'],
+    ['ข้อสรุปภาพรวม', document.getElementById('overallSummary').value],
+    ['ประเด็นที่ต้องดำเนินการต่อ/ขอหลักฐานเพิ่มเติม', document.getElementById('followUpNote').value],
+    ['', ''],
+    ['รายชื่อผู้ลงนาม', ''],
+  ];
+  signers.forEach((s,i) => summaryRows.push([`ผู้ลงนามที่ ${i+1}`, `${s.name} | ${s.pos} | วันที่ ${s.date}`]));
+  const wsSum = XLSX.utils.aoa_to_sheet(summaryRows);
+  wsSum['!cols'] = [{wch:35},{wch:60}];
+  XLSX.utils.book_append_sheet(wb, wsSum, 'สรุปภาพรวม');
+
+  XLSX.writeFile(wb, 'กระดาษทำการสังเกตการณ์_IoT_Smart_Farm.xlsx');
+  showToast('ดาวน์โหลด Excel สำเร็จ ✓');
+}
 </script>
 
 <style>

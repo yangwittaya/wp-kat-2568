@@ -43,6 +43,8 @@
     <h5 class="mb-0 font-weight-bold"><i class="fas fa-file-alt text-success mr-2"></i>สรุปผลการตรวจสอบ</h5>
     <div>
       <button class="btn btn-kat mr-2" onclick="saveReport()"><i class="fas fa-save mr-1"></i>บันทึก</button>
+      <button class="btn btn-outline-primary mr-2" onclick="exportWord('mainContent','สรุปผลการตรวจสอบ_IoT_Smart_Farm','สรุปผลการตรวจสอบ IoT Smart Farm')"><i class="fas fa-file-word mr-1"></i>Word</button>
+      <button class="btn btn-outline-success mr-2" onclick="exportExcelTables('mainContent','สรุปผลการตรวจสอบ_IoT_Smart_Farm')"><i class="fas fa-file-excel mr-1"></i>Excel</button>
       <button class="btn btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
     </div>
   </div>
@@ -204,6 +206,8 @@
 <script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="export.js"></script>
 
 <script>
 async function loadChecklistSummary() {
