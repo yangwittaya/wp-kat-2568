@@ -259,13 +259,14 @@ async function uploadFiles(event, pointId) {
       if (!res.ok || data.error) throw new Error(data.error?.message || 'Upload failed');
 
       const url = data.secure_url;
+      const fileObj = { url, name: file.name, type: file.type, caption: '' };
 
-      // Save URL to Firestore
+      // Save to Firestore
       await db.collection(COL.OBSERVE).doc(pointId).set({
-        files: firebase.firestore.FieldValue.arrayUnion({ url, name: file.name, type: file.type })
+        files: firebase.firestore.FieldValue.arrayUnion(fileObj)
       }, { merge: true });
 
-      addPhotoThumb(pointId, url, file.type);
+      addPhotoThumb(pointId, fileObj);
       showToast('อัปโหลดสำเร็จ ✓');
     } catch(e) {
       showToast('อัปโหลดไม่สำเร็จ: ' + e.message, true);
@@ -273,29 +274,114 @@ async function uploadFiles(event, pointId) {
   }
 }
 
-function addPhotoThumb(pointId, url, type) {
+function addPhotoThumb(pointId, fileObj) {
   const grid = document.getElementById('photos-' + pointId);
-  const printGrid = document.getElementById('photos-print-' + pointId);
   if (!grid) return;
+  const isVideo = fileObj.type && fileObj.type.startsWith('video');
 
-  let el, printEl;
-  if (type && type.startsWith('video')) {
-    el = document.createElement('a');
-    el.href = url; el.target='_blank';
-    el.innerHTML = `<div style="width:100px;height:80px;background:#e8f5e9;border:2px solid #ccc;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--green)"><i class="fas fa-film"></i></div>`;
-    printEl = document.createElement('div');
-    printEl.innerHTML = `<small>VDO: <a href="${url}">${url.substring(0,50)}...</a></small>`;
+  const wrap = document.createElement('div');
+  wrap.className = 'photo-thumb-wrap';
+  wrap.dataset.url = fileObj.url;
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'photo-delete-btn no-print';
+  delBtn.title = 'ลบรูปภาพ/วิดีโอนี้';
+  delBtn.innerHTML = '<i class="fas fa-times"></i>';
+  delBtn.onclick = () => deletePhoto(pointId, fileObj, wrap);
+
+  let mediaEl;
+  if (isVideo) {
+    mediaEl = document.createElement('a');
+    mediaEl.href = fileObj.url; mediaEl.target = '_blank';
+    mediaEl.innerHTML = `<div class="photo-thumb" style="background:#e8f5e9;display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--green)"><i class="fas fa-film"></i></div>`;
   } else {
-    el = document.createElement('img');
-    el.src = url; el.className = 'photo-thumb';
-    el.onclick = () => window.open(url, '_blank');
-    printEl = document.createElement('img');
-    printEl.src = url;
-    printEl.style.cssText = 'width:2.5cm;height:2cm;object-fit:cover;margin:2px;border:1px solid #ccc;';
+    mediaEl = document.createElement('img');
+    mediaEl.src = fileObj.url;
+    mediaEl.className = 'photo-thumb';
+    mediaEl.onclick = () => window.open(fileObj.url, '_blank');
   }
 
-  grid.appendChild(el);
-  if (printGrid) printGrid.appendChild(printEl);
+  const capInput = document.createElement('input');
+  capInput.type = 'text';
+  capInput.className = 'form-control form-control-sm no-print photo-caption-input';
+  capInput.placeholder = 'คำบรรยายภาพ...';
+  capInput.value = fileObj.caption || '';
+  capInput.oninput = () => {
+    fileObj.caption = capInput.value;
+    updatePhotoCaptionPrint(pointId, fileObj);
+    savePhotoField(pointId, fileObj);
+  };
+
+  wrap.appendChild(delBtn);
+  wrap.appendChild(mediaEl);
+  wrap.appendChild(capInput);
+  grid.appendChild(wrap);
+
+  addPhotoPrintBlock(pointId, fileObj);
+}
+
+// ===== Print block: ขนาดเท่าเอกสาร + คำบรรยายภาพ =====
+function addPhotoPrintBlock(pointId, fileObj) {
+  const printGrid = document.getElementById('photos-print-' + pointId);
+  if (!printGrid) return;
+  const isVideo = fileObj.type && fileObj.type.startsWith('video');
+
+  const block = document.createElement('div');
+  block.className = 'photo-print-block';
+  block.dataset.url = fileObj.url;
+
+  if (isVideo) {
+    block.innerHTML = `<div style="border:1px solid #ccc;padding:.5cm;">
+        <i class="fas fa-film" style="font-size:1.5rem;color:#2e7d32"></i>
+        <div style="font-size:9pt">วิดีโอ: <a href="${fileObj.url}">${fileObj.url}</a></div>
+      </div>
+      <div class="photo-print-caption">${fileObj.caption || ''}</div>`;
+  } else {
+    block.innerHTML = `<img src="${fileObj.url}" class="photo-print-img">
+      <div class="photo-print-caption">${fileObj.caption || ''}</div>`;
+  }
+  printGrid.appendChild(block);
+}
+
+function updatePhotoCaptionPrint(pointId, fileObj) {
+  const printGrid = document.getElementById('photos-print-' + pointId);
+  if (!printGrid) return;
+  const block = Array.from(printGrid.children).find(b => b.dataset.url === fileObj.url);
+  if (block) {
+    const capEl = block.querySelector('.photo-print-caption');
+    if (capEl) capEl.textContent = fileObj.caption || '';
+  }
+}
+
+// ===== แก้ไข caption ในเอกสาร Firestore (ต้องเขียนทับทั้ง array เพราะ Firestore ไม่รองรับแก้ทีละ element) =====
+async function savePhotoField(pointId, fileObj) {
+  try {
+    const doc = await db.collection(COL.OBSERVE).doc(pointId).get();
+    if (!doc.exists) return;
+    const data = doc.data();
+    const files = (data.files || []).map(f => f.url === fileObj.url ? { ...f, caption: fileObj.caption } : f);
+    await db.collection(COL.OBSERVE).doc(pointId).set({ files }, { merge: true });
+  } catch(e) { console.error(e); }
+}
+
+// ===== ลบรูปภาพ/วิดีโอ =====
+async function deletePhoto(pointId, fileObj, wrapEl) {
+  if (!confirm('ต้องการลบรูปภาพ/วิดีโอนี้หรือไม่?')) return;
+  try {
+    await db.collection(COL.OBSERVE).doc(pointId).update({
+      files: firebase.firestore.FieldValue.arrayRemove(fileObj)
+    });
+    wrapEl.remove();
+    const printGrid = document.getElementById('photos-print-' + pointId);
+    if (printGrid) {
+      const block = Array.from(printGrid.children).find(b => b.dataset.url === fileObj.url);
+      if (block) block.remove();
+    }
+    showToast('ลบสำเร็จ ✓');
+  } catch(e) {
+    showToast('ลบไม่สำเร็จ: ' + e.message, true);
+  }
 }
 
 // ===== Dynamic Signatures =====
@@ -426,7 +512,7 @@ async function loadObserve() {
 
       // Load photos
       if (d.files && d.files.length > 0) {
-        d.files.forEach(f => addPhotoThumb(d.pointId, f.url, f.type));
+        d.files.forEach(f => addPhotoThumb(d.pointId, f));
       }
     });
   } catch(e) { console.error(e); }
