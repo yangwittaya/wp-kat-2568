@@ -179,7 +179,7 @@ function uploadCheckMedia(event, itemId) {
       // บีบอัดแล้วบันทึก Firestore
       compressBase64(origUrl).then(function(b64) {
         img.src = b64;
-        img.onclick = function() { window.open(b64, '_blank'); };
+        img.onclick = function() { openMediaViewer(b64, false); };
 
         // ปุ่มลบ
         var delBtn = document.createElement('button');
@@ -235,30 +235,59 @@ function uploadCheckMedia(event, itemId) {
   }
 }
 
-function addCheckThumb(itemId, url, type, canDelete=false) {
-  const grid = document.getElementById('cmedia-' + itemId);
+// ===== Media Viewer Modal =====
+function openMediaViewer(url, isVideo) {
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem;cursor:pointer';
+  overlay.onclick = function(e) { if (e.target === overlay) document.body.removeChild(overlay); };
+
+  var closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '&times;';
+  closeBtn.style.cssText = 'position:absolute;top:10px;right:14px;background:none;border:none;color:#fff;font-size:2.2rem;cursor:pointer;line-height:1;z-index:1';
+  closeBtn.onclick = function() { document.body.removeChild(overlay); };
+  overlay.appendChild(closeBtn);
+
+  if (isVideo) {
+    var video = document.createElement('video');
+    video.src = url; video.controls = true; video.autoplay = true;
+    video.style.cssText = 'max-width:95vw;max-height:88vh;border-radius:4px;background:#000';
+    overlay.appendChild(video);
+  } else {
+    var img = document.createElement('img');
+    img.src = url;
+    img.style.cssText = 'max-width:95vw;max-height:88vh;object-fit:contain;border-radius:4px';
+    overlay.appendChild(img);
+  }
+  document.body.appendChild(overlay);
+}
+
+function addCheckThumb(itemId, url, type, canDelete) {
+  canDelete = canDelete || false;
+  var grid = document.getElementById('cmedia-' + itemId);
   if (!grid) return;
-  const wrap = document.createElement('div');
+  var wrap = document.createElement('div');
   wrap.style.cssText = 'position:relative;display:inline-block;margin:2px';
   if (type && type.startsWith('video')) {
-    const a = document.createElement('a');
-    a.href = url; a.target = '_blank'; a.title = 'เล่นวิดีโอ';
-    a.style.cssText = 'display:flex;align-items:center;justify-content:center;width:72px;height:56px;background:#e8f5e9;border:2px solid #aaa;border-radius:6px;font-size:1.4rem;color:#2e7d32;text-decoration:none';
-    a.innerHTML = '<i class="fas fa-film"></i>';
-    wrap.appendChild(a);
+    var btn = document.createElement('div');
+    btn.title = 'กดเพื่อเล่นวิดีโอ';
+    btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:72px;height:56px;background:#e8f5e9;border:2px solid #aaa;border-radius:6px;font-size:1.4rem;color:#2e7d32;cursor:pointer';
+    btn.innerHTML = '<i class="fas fa-film"></i>';
+    btn.onclick = function() { openMediaViewer(url, true); };
+    wrap.appendChild(btn);
   } else {
-    const img = document.createElement('img');
+    var img = document.createElement('img');
     img.src = url;
+    img.title = 'กดเพื่อดูภาพขยาย';
     img.style.cssText = 'width:72px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #aaa;cursor:pointer;display:block';
-    img.onclick = () => window.open(url, '_blank');
+    img.onclick = function() { openMediaViewer(url, false); };
     wrap.appendChild(img);
   }
   if (canDelete) {
-    const btn = document.createElement('button');
-    btn.innerHTML = '&times;'; btn.title = 'ลบ';
-    btn.style.cssText = 'position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
-    btn.onclick = () => deleteCheckMedia(itemId, url, wrap);
-    wrap.appendChild(btn);
+    var delBtn = document.createElement('button');
+    delBtn.innerHTML = '&times;'; delBtn.title = 'ลบ';
+    delBtn.style.cssText = 'position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
+    delBtn.onclick = function() { deleteCheckMedia(itemId, url, wrap); };
+    wrap.appendChild(delBtn);
   }
   grid.appendChild(wrap);
 }
@@ -295,8 +324,7 @@ function buildTab(tab) {
                 <th>รายการตรวจสอบ</th>
                 <th class="d-none d-md-table-cell" style="width:13%">คุณลักษณะที่กำหนด</th>
                 <th class="d-none d-md-table-cell" style="width:20%">วิธีการตรวจ</th>
-                <th style="width:10%" class="text-center">ผลการตรวจ</th>
-                <th style="width:28%">หมายเหตุ / รูปภาพ</th>
+                <th style="width:35%">ผลการตรวจ / หมายเหตุ / รูปภาพ</th>
               </tr>
             </thead>
             <tbody>`;
@@ -310,17 +338,15 @@ function buildTab(tab) {
         <td style="font-size:.82rem">${item.text}</td>
         <td class="d-none d-md-table-cell" style="font-size:.78rem;color:#555">${item.spec}</td>
         <td class="d-none d-md-table-cell" style="font-size:.78rem;color:#555">${item.method}</td>
-        <td class="text-center">
-          <select class="check-select" id="res-${item.id}" onchange="onResultChange('${item.id}')">
+        <td>
+          <!-- ผลการตรวจ + หมายเหตุ + รูปภาพ รวมในช่องเดียว -->
+          <select class="check-select mb-1" style="width:100%" id="res-${item.id}" onchange="onResultChange('${item.id}')">
             <option value="">-- เลือก --</option>
             <option value="ผ่าน">✓ ผ่าน</option>
             <option value="ไม่ผ่าน">✗ ไม่ผ่าน</option>
             <option value="ไม่ได้ตรวจ">⚠ ไม่ได้ตรวจ</option>
           </select>
-          <!-- Print view -->
           <span class="print-badge d-none" id="badge-${item.id}"></span>
-        </td>
-        <td>
           <textarea class="form-control form-control-sm" id="note-${item.id}"
             rows="1" style="overflow-y:hidden;resize:none;font-size:.8rem;min-height:32px;width:100%"
             placeholder="หมายเหตุ..."
@@ -331,22 +357,16 @@ function buildTab(tab) {
           <div class="no-print mt-1 pt-1" style="border-top:1px dashed #ddd">
             <div class="d-flex flex-wrap" style="gap:3px;margin-bottom:3px">
               <div class="upload-btn-wrap">
-                <button class="btn btn-outline-secondary btn-xs-media">
-                  <i class="fas fa-camera"></i> ถ่าย</button>
-                <input type="file" accept="image/*" capture="environment"
-                  onchange="uploadCheckMedia(event,'${item.id}')">
+                <button class="btn btn-outline-secondary btn-xs-media"><i class="fas fa-camera"></i> ถ่าย</button>
+                <input type="file" accept="image/*" capture="environment" onchange="uploadCheckMedia(event,'${item.id}')">
               </div>
               <div class="upload-btn-wrap">
-                <button class="btn btn-outline-info btn-xs-media">
-                  <i class="fas fa-video"></i> วิดีโอ</button>
-                <input type="file" accept="video/*" capture="camcorder"
-                  onchange="uploadCheckMedia(event,'${item.id}')">
+                <button class="btn btn-outline-info btn-xs-media"><i class="fas fa-video"></i> วิดีโอ</button>
+                <input type="file" accept="video/*" capture="camcorder" onchange="uploadCheckMedia(event,'${item.id}')">
               </div>
               <div class="upload-btn-wrap">
-                <button class="btn btn-outline-success btn-xs-media">
-                  <i class="fas fa-upload"></i> ไฟล์</button>
-                <input type="file" accept="image/*,video/*" multiple
-                  onchange="uploadCheckMedia(event,'${item.id}')">
+                <button class="btn btn-outline-success btn-xs-media"><i class="fas fa-upload"></i> ไฟล์</button>
+                <input type="file" accept="image/*,video/*" multiple onchange="uploadCheckMedia(event,'${item.id}')">
               </div>
             </div>
             <div id="cmedia-${item.id}" style="display:flex;flex-wrap:wrap;gap:3px"></div>
