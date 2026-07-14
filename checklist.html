@@ -146,12 +146,12 @@ function buildTab(tab) {
           <table class="table table-sm check-table mb-0">
             <thead>
               <tr>
-                <th style="width:60px">รหัส</th>
-                <th style="width:220px">รายการตรวจสอบ</th>
-                <th style="width:160px">คุณลักษณะที่กำหนด</th>
-                <th style="width:300px">วิธีการตรวจ</th>
-                <th style="width:130px" class="text-center">ผลการตรวจ</th>
-                <th style="width:400px">หมายเหตุ</th>
+                <th style="width:5%">รหัส</th>
+                <th style="width:17%">รายการตรวจสอบ</th>
+                <th style="width:13%">คุณลักษณะที่กำหนด</th>
+                <th style="width:24%">วิธีการตรวจ</th>
+                <th style="width:10%" class="text-center">ผลการตรวจ</th>
+                <th style="width:31%">หมายเหตุ</th>
               </tr>
             </thead>
             <tbody>`;
@@ -177,7 +177,7 @@ function buildTab(tab) {
         </td>
         <td>
           <textarea class="form-control form-control-sm" id="note-${item.id}"
-            rows="1" style="overflow-y:hidden;resize:none;font-size:.8rem"
+            rows="1" style="overflow-y:hidden;resize:none;font-size:.8rem;min-height:32px;width:100%"
             placeholder="หมายเหตุ..."
             oninput="autoResize(this);onNoteChange('${item.id}')"></textarea>
           <div class="note-print" id="noteprint-${item.id}"
