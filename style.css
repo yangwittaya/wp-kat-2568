@@ -248,6 +248,81 @@ textarea.form-control { resize: vertical; }
 }
 #toast.show { opacity: 1; }
 
+/* ===== Media upload buttons (small) ===== */
+.btn-xs-media {
+  font-size: .68rem;
+  padding: 2px 7px;
+  line-height: 1.5;
+}
+
+/* =====================================================
+   RESPONSIVE — MOBILE / TABLET
+   ===================================================== */
+
+/* ---- XS (< 576px) phones ---- */
+@media (max-width: 575.98px) {
+  body { font-size: 13px; }
+
+  /* Navbar: ลดขนาดตัวอักษร */
+  .navbar-brand { font-size: .9rem; }
+
+  /* Card padding ลดลง */
+  .card-body { padding: .6rem; }
+  .card-header-kat { font-size: .88rem; padding: .5rem .75rem; }
+
+  /* ตาราง checklist: ซ่อนคอลัมน์ที่ไม่จำเป็น (done via d-none d-md-table-cell in HTML) */
+  .check-table { font-size: .8rem; }
+  .check-table td, .check-table th { padding: .3rem .4rem; }
+  .check-select { min-width: 80px; font-size: .8rem; padding: 2px 4px; }
+
+  /* Observation rows */
+  .obs-row { padding: .65rem .75rem; }
+  .obs-row .obs-id { font-size: .82rem; min-width: 48px; }
+  .criterion-box { font-size: .78rem; }
+
+  /* Signature blocks stack vertically */
+  .sig-block { margin-bottom: .5rem; }
+
+  /* Section headers */
+  .section-header { font-size: .88rem; padding: .4rem .75rem; }
+
+  /* ปุ่ม */
+  .btn { font-size: .82rem; padding: .3rem .65rem; }
+  .btn-xs-media { font-size: .65rem; padding: 2px 5px; }
+
+  /* Info box */
+  .info-box { font-size: .8rem; }
+
+  /* Progress bar label */
+  #progressText { font-size: .8rem; }
+
+  /* Thumbnails เล็กลงบนมือถือ */
+  .photo-thumb { width: 70px; height: 55px; }
+  .photo-thumb-wrap { width: 75px; }
+}
+
+/* ---- SM (576px – 767px) tablets portrait / large phones ---- */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  body { font-size: 14px; }
+
+  .check-table { font-size: .85rem; }
+  .check-table td, .check-table th { padding: .35rem .5rem; }
+
+  /* Signature blocks side-by-side at 50% */
+  .col-sig { flex: 0 0 50%; max-width: 50%; }
+
+  .btn-xs-media { font-size: .66rem; padding: 2px 6px; }
+}
+
+/* ---- ป้องกัน table ล้นจอบนหน้าจอเล็ก ---- */
+@media (max-width: 767.98px) {
+  .table-responsive { -webkit-overflow-scrolling: touch; }
+  /* ให้ container ไม่มี horizontal padding มากเกินไป */
+  .container, .container-fluid { padding-left: .5rem; padding-right: .5rem; }
+  /* Flex-wrap ปุ่มสื่อ */
+  .d-flex.flex-wrap { flex-wrap: wrap !important; }
+}
+
 /* =====================================================
    PRINT STYLES
    ===================================================== */

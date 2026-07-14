@@ -119,6 +119,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="config.js"></script>
+<script>const CLOUDINARY_CLOUD='demouhbhu',CLOUDINARY_PRESET='wp_kat_unsigned';</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -129,6 +130,75 @@
 function autoResize(el) {
   el.style.height = 'auto';
   el.style.height = el.scrollHeight + 'px';
+}
+
+// ===== Media Upload (Cloudinary) =====
+async function uploadCheckMedia(event, itemId) {
+  const files = event.target.files;
+  if (!files.length) return;
+  event.target.value = ''; // reset so same file can be picked again
+  for (let file of files) {
+    try {
+      showToast('กำลังอัปโหลด...');
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_PRESET);
+      fd.append('folder', 'katChecklist/' + itemId);
+      const isVideo = file.type.startsWith('video');
+      const ep = isVideo
+        ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`
+        : `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
+      const res = await fetch(ep, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error?.message || 'Upload failed');
+      await db.collection(COL.CHECKLIST).doc(itemId).set({
+        files: firebase.firestore.FieldValue.arrayUnion({ url: data.secure_url, name: file.name, type: file.type })
+      }, { merge: true });
+      addCheckThumb(itemId, data.secure_url, file.type, true);
+      showToast('อัปโหลดสำเร็จ ✓');
+    } catch(e) { showToast('อัปโหลดไม่สำเร็จ: ' + e.message, true); }
+  }
+}
+
+function addCheckThumb(itemId, url, type, canDelete=false) {
+  const grid = document.getElementById('cmedia-' + itemId);
+  if (!grid) return;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:relative;display:inline-block;margin:2px';
+  if (type && type.startsWith('video')) {
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.title = 'เล่นวิดีโอ';
+    a.style.cssText = 'display:flex;align-items:center;justify-content:center;width:72px;height:56px;background:#e8f5e9;border:2px solid #aaa;border-radius:6px;font-size:1.4rem;color:#2e7d32;text-decoration:none';
+    a.innerHTML = '<i class="fas fa-film"></i>';
+    wrap.appendChild(a);
+  } else {
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.cssText = 'width:72px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #aaa;cursor:pointer;display:block';
+    img.onclick = () => window.open(url, '_blank');
+    wrap.appendChild(img);
+  }
+  if (canDelete) {
+    const btn = document.createElement('button');
+    btn.innerHTML = '&times;'; btn.title = 'ลบ';
+    btn.style.cssText = 'position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
+    btn.onclick = () => deleteCheckMedia(itemId, url, wrap);
+    wrap.appendChild(btn);
+  }
+  grid.appendChild(wrap);
+}
+
+async function deleteCheckMedia(itemId, url, wrapEl) {
+  if (!confirm('ลบรูปภาพ/วิดีโอนี้?')) return;
+  try {
+    const snap = await db.collection(COL.CHECKLIST).doc(itemId).get();
+    if (snap.exists) {
+      const files = (snap.data().files || []).filter(f => f.url !== url);
+      await db.collection(COL.CHECKLIST).doc(itemId).update({ files });
+    }
+    wrapEl.remove();
+    showToast('ลบเรียบร้อย ✓');
+  } catch(e) { showToast('ลบไม่สำเร็จ: ' + e.message, true); }
 }
 
 // In-memory state
@@ -147,11 +217,11 @@ function buildTab(tab) {
             <thead>
               <tr>
                 <th style="width:5%">รหัส</th>
-                <th style="width:17%">รายการตรวจสอบ</th>
-                <th style="width:13%">คุณลักษณะที่กำหนด</th>
-                <th style="width:24%">วิธีการตรวจ</th>
+                <th>รายการตรวจสอบ</th>
+                <th class="d-none d-md-table-cell" style="width:13%">คุณลักษณะที่กำหนด</th>
+                <th class="d-none d-md-table-cell" style="width:20%">วิธีการตรวจ</th>
                 <th style="width:10%" class="text-center">ผลการตรวจ</th>
-                <th style="width:31%">หมายเหตุ</th>
+                <th style="width:28%">หมายเหตุ / รูปภาพ</th>
               </tr>
             </thead>
             <tbody>`;
@@ -163,8 +233,8 @@ function buildTab(tab) {
       <tr id="row-${item.id}"${flagRow}>
         <td class="font-weight-bold text-success" style="font-size:.8rem">${item.id}${flagBadge}</td>
         <td style="font-size:.82rem">${item.text}</td>
-        <td style="font-size:.78rem;color:#555">${item.spec}</td>
-        <td style="font-size:.78rem;color:#555">${item.method}</td>
+        <td class="d-none d-md-table-cell" style="font-size:.78rem;color:#555">${item.spec}</td>
+        <td class="d-none d-md-table-cell" style="font-size:.78rem;color:#555">${item.method}</td>
         <td class="text-center">
           <select class="check-select" id="res-${item.id}" onchange="onResultChange('${item.id}')">
             <option value="">-- เลือก --</option>
@@ -182,6 +252,30 @@ function buildTab(tab) {
             oninput="autoResize(this);onNoteChange('${item.id}')"></textarea>
           <div class="note-print" id="noteprint-${item.id}"
             style="display:none;font-size:.8rem;white-space:pre-wrap;word-break:break-word;min-height:.6cm"></div>
+          <!-- Media section (hidden in print) -->
+          <div class="no-print mt-1 pt-1" style="border-top:1px dashed #ddd">
+            <div class="d-flex flex-wrap" style="gap:3px;margin-bottom:3px">
+              <div class="upload-btn-wrap">
+                <button class="btn btn-outline-secondary btn-xs-media">
+                  <i class="fas fa-camera"></i> ถ่าย</button>
+                <input type="file" accept="image/*" capture="environment"
+                  onchange="uploadCheckMedia(event,'${item.id}')">
+              </div>
+              <div class="upload-btn-wrap">
+                <button class="btn btn-outline-info btn-xs-media">
+                  <i class="fas fa-video"></i> วิดีโอ</button>
+                <input type="file" accept="video/*" capture="camcorder"
+                  onchange="uploadCheckMedia(event,'${item.id}')">
+              </div>
+              <div class="upload-btn-wrap">
+                <button class="btn btn-outline-success btn-xs-media">
+                  <i class="fas fa-upload"></i> ไฟล์</button>
+                <input type="file" accept="image/*,video/*" multiple
+                  onchange="uploadCheckMedia(event,'${item.id}')">
+              </div>
+            </div>
+            <div id="cmedia-${item.id}" style="display:flex;flex-wrap:wrap;gap:3px"></div>
+          </div>
         </td>
       </tr>`;
   });
@@ -308,6 +402,10 @@ async function loadAll() {
         autoResize(noteEl);
         const printEl = document.getElementById('noteprint-' + d.itemId);
         if (printEl) printEl.textContent = d.note || '';
+      }
+      // Restore media thumbnails
+      if (d.files && d.files.length > 0) {
+        d.files.forEach(f => addCheckThumb(d.itemId, f.url, f.type, true));
       }
     });
     updateProgress();
