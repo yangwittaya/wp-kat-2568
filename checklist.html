@@ -329,6 +329,14 @@ function showToast(msg, err=false) {
 
 loadAll();
 
+// แก้บั๊ก: textarea ในแท็บที่ยังไม่ได้เปิดดู (display:none) จะคำนวณ scrollHeight ได้ 0
+// ทำให้กล่องหมายเหตุไม่ขยายตามเนื้อหาจนกว่าจะคลิกเข้าไปพิมพ์เอง
+// แก้โดย re-run autoResize() ให้ทุกกล่องในแท็บนั้น ทันทีที่แท็บถูกเปิดขึ้นมาดู
+$('#checkTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+  const target = $(e.target).attr('href');
+  document.querySelectorAll(target + ' textarea.form-control').forEach(el => autoResize(el));
+});
+
 // ===== Export: Excel (data-model based, ครบทุกแท็บ/712 รายการ) =====
 function exportChecklistExcel() {
   if (typeof XLSX === 'undefined') { showToast('ไม่พบไลบรารี XLSX', true); return; }
