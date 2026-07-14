@@ -321,6 +321,11 @@ textarea.form-control { resize: vertical; }
   .container, .container-fluid { padding-left: .5rem; padding-right: .5rem; }
   /* Flex-wrap ปุ่มสื่อ */
   .d-flex.flex-wrap { flex-wrap: wrap !important; }
+  /* Tabs scrollable แนวนอน */
+  .nav-tabs { flex-wrap: nowrap !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .nav-tabs .nav-item { flex-shrink: 0; }
+  /* Navbar: prevent overflow */
+  .navbar-brand { max-width: 60vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 /* =====================================================

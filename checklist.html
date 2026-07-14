@@ -38,15 +38,15 @@
   </div>
 
   <!-- Title + Actions -->
-  <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <div class="d-flex justify-content-between align-items-start mb-3 no-print" style="flex-wrap:wrap;gap:8px">
     <h5 class="mb-0 font-weight-bold">
       <i class="fas fa-tasks text-success mr-2"></i>Checklist ตรวจรับพัสดุ
       <small class="text-muted ml-2" id="totalCount"></small>
     </h5>
-    <div>
-      <button class="btn btn-sm btn-success mr-1" onclick="saveAll()"><i class="fas fa-save mr-1"></i>บันทึกทั้งหมด</button>
-      <button class="btn btn-sm btn-outline-primary mr-1" onclick="exportChecklistWord()"><i class="fas fa-file-word mr-1"></i>Word</button>
-      <button class="btn btn-sm btn-outline-success mr-1" onclick="exportChecklistExcel()"><i class="fas fa-file-excel mr-1"></i>Excel</button>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      <button class="btn btn-sm btn-success" onclick="saveAll()"><i class="fas fa-save mr-1"></i>บันทึกทั้งหมด</button>
+      <button class="btn btn-sm btn-outline-primary" onclick="exportChecklistWord()"><i class="fas fa-file-word mr-1"></i>Word</button>
+      <button class="btn btn-sm btn-outline-success" onclick="exportChecklistExcel()"><i class="fas fa-file-excel mr-1"></i>Excel</button>
       <button class="btn btn-sm btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
     </div>
   </div>
@@ -54,13 +54,13 @@
   <!-- Progress Summary (no-print) -->
   <div class="row mb-3 no-print" id="progressRow"></div>
 
-  <!-- Tabs (no-print) -->
-  <ul class="nav nav-tabs mb-3 no-print" id="checkTabs">
-    <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tab12">รายการ 12 <span class="badge badge-light ml-1" id="cnt12">53</span></a></li>
-    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab13">รายการ 13 <span class="badge badge-light ml-1" id="cnt13">46</span></a></li>
-    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab16">รายการ 16 <span class="badge badge-light ml-1" id="cnt16">317</span></a></li>
-    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab17">รายการ 17 <span class="badge badge-light ml-1" id="cnt17">228</span></a></li>
-    <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab19">รายการ 19 <span class="badge badge-light ml-1" id="cnt19">68</span></a></li>
+  <!-- Tabs (no-print) — scrollable on mobile -->
+  <ul class="nav nav-tabs mb-3 no-print" id="checkTabs" style="flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap">
+    <li class="nav-item" style="white-space:nowrap"><a class="nav-link active" data-toggle="tab" href="#tab12">รายการ 12 <span class="badge badge-light ml-1" id="cnt12">53</span></a></li>
+    <li class="nav-item" style="white-space:nowrap"><a class="nav-link" data-toggle="tab" href="#tab13">รายการ 13 <span class="badge badge-light ml-1" id="cnt13">46</span></a></li>
+    <li class="nav-item" style="white-space:nowrap"><a class="nav-link" data-toggle="tab" href="#tab16">รายการ 16 <span class="badge badge-light ml-1" id="cnt16">317</span></a></li>
+    <li class="nav-item" style="white-space:nowrap"><a class="nav-link" data-toggle="tab" href="#tab17">รายการ 17 <span class="badge badge-light ml-1" id="cnt17">228</span></a></li>
+    <li class="nav-item" style="white-space:nowrap"><a class="nav-link" data-toggle="tab" href="#tab19">รายการ 19 <span class="badge badge-light ml-1" id="cnt19">68</span></a></li>
   </ul>
 
   <!-- Tab Content -->
@@ -136,27 +136,54 @@ function autoResize(el) {
 async function uploadCheckMedia(event, itemId) {
   const files = event.target.files;
   if (!files.length) return;
-  event.target.value = ''; // reset so same file can be picked again
+  event.target.value = '';
   for (let file of files) {
+    const isVideo = file.type.startsWith('video');
+    const localUrl = URL.createObjectURL(file);
+
+    // Show preview immediately while uploading
+    const grid = document.getElementById('cmedia-' + itemId);
+    const previewWrap = document.createElement('div');
+    previewWrap.style.cssText = 'position:relative;display:inline-block;margin:2px;opacity:0.55';
+    if (isVideo) {
+      previewWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:72px;height:56px;background:#e8f5e9;border:2px dashed #aaa;border-radius:6px;font-size:1.3rem;color:#888"><i class="fas fa-spinner fa-spin"></i></div>';
+    } else {
+      const img = document.createElement('img');
+      img.src = localUrl;
+      img.style.cssText = 'width:72px;height:56px;object-fit:cover;border-radius:6px;border:2px dashed #aaa;display:block';
+      previewWrap.appendChild(img);
+    }
+    if (grid) grid.appendChild(previewWrap);
+
     try {
       showToast('กำลังอัปโหลด...');
       const fd = new FormData();
       fd.append('file', file);
       fd.append('upload_preset', CLOUDINARY_PRESET);
       fd.append('folder', 'katChecklist/' + itemId);
-      const isVideo = file.type.startsWith('video');
       const ep = isVideo
         ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`
         : `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`;
       const res = await fetch(ep, { method: 'POST', body: fd });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error?.message || 'Upload failed');
+
+      // Replace preview with final version
+      URL.revokeObjectURL(localUrl);
+      previewWrap.remove();
       await db.collection(COL.CHECKLIST).doc(itemId).set({
         files: firebase.firestore.FieldValue.arrayUnion({ url: data.secure_url, name: file.name, type: file.type })
       }, { merge: true });
       addCheckThumb(itemId, data.secure_url, file.type, true);
       showToast('อัปโหลดสำเร็จ ✓');
-    } catch(e) { showToast('อัปโหลดไม่สำเร็จ: ' + e.message, true); }
+    } catch(e) {
+      // Mark preview as failed so user knows
+      previewWrap.style.opacity = '1';
+      previewWrap.style.outline = '2px solid #c62828';
+      previewWrap.title = 'อัปโหลดไม่สำเร็จ: ' + e.message;
+      showToast('อัปโหลดไม่สำเร็จ: ' + e.message, true);
+      console.error('Cloudinary upload error:', e);
+    }
   }
 }
 
