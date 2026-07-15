@@ -300,13 +300,16 @@ function addCheckThumb(itemId, url, type, canDelete, caption) {
     img.onclick = function() { openMediaViewer(url, false); };
     wrap.appendChild(img);
   }
-  var capInput = document.createElement('input');
-  capInput.type = 'text';
+  var capInput = document.createElement('textarea');
+  capInput.className = 'check-caption-input';
+  capInput.rows = 1;
   capInput.value = caption;
   capInput.placeholder = 'คำบรรยาย...';
-  capInput.style.cssText = 'width:100%;margin-top:3px;font-size:.68rem;border:1px solid #ccc;border-radius:4px;padding:2px 4px;box-sizing:border-box';
-  capInput.oninput = function() { onCheckCaptionChange(itemId, url, capInput.value); };
+  capInput.style.cssText = 'display:block;width:100%;margin-top:3px;font-size:.68rem;border:1px solid #ccc;border-radius:4px;padding:2px 4px;box-sizing:border-box;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;min-height:18px;line-height:1.25;font-family:inherit';
+  capInput.oninput = function() { autoResize(capInput); onCheckCaptionChange(itemId, url, capInput.value); };
   wrap.appendChild(capInput);
+  // ขยายกล่องให้พอดีกับข้อความทันที (สำคัญกรณีโหลดคำบรรยายเดิมที่มีความยาวมาแล้ว)
+  setTimeout(function() { autoResize(capInput); }, 0);
   if (canDelete) {
     var delBtn = document.createElement('button');
     delBtn.innerHTML = '&times;'; delBtn.title = 'ลบ';
@@ -586,7 +589,7 @@ loadAll();
 // แก้โดย re-run autoResize() ให้ทุกกล่องในแท็บนั้น ทันทีที่แท็บถูกเปิดขึ้นมาดู
 $('#checkTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
   const target = $(e.target).attr('href');
-  document.querySelectorAll(target + ' textarea.form-control').forEach(el => autoResize(el));
+  document.querySelectorAll(target + ' textarea.form-control, ' + target + ' textarea.check-caption-input').forEach(el => autoResize(el));
 });
 
 // ===== Export: Excel (data-model based, ครบทุกแท็บ/712 รายการ) =====
