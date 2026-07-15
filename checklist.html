@@ -375,8 +375,8 @@ function buildTab(tab) {
               <tr>
                 <th style="width:5%;min-width:48px">รหัส</th>
                 <th style="min-width:140px">รายการตรวจสอบ</th>
-                <th class="d-none d-lg-table-cell" style="width:13%">คุณลักษณะที่กำหนด</th>
-                <th class="d-none d-lg-table-cell" style="width:18%">วิธีการตรวจ</th>
+                <th style="width:13%;min-width:160px">คุณลักษณะที่กำหนด</th>
+                <th style="width:18%;min-width:200px">วิธีการตรวจ</th>
                 <th style="width:13%;min-width:115px" class="text-center">ผลการตรวจ</th>
                 <th style="width:28%;min-width:180px">หมายเหตุ / รูปภาพ</th>
               </tr>
@@ -390,8 +390,8 @@ function buildTab(tab) {
       <tr id="row-${item.id}"${flagRow}>
         <td class="font-weight-bold text-success" style="font-size:.8rem;min-width:48px">${item.id}${flagBadge}</td>
         <td style="font-size:.82rem;min-width:140px">${item.text}</td>
-        <td class="d-none d-lg-table-cell" style="font-size:.78rem;color:#555">${item.spec}</td>
-        <td class="d-none d-lg-table-cell" style="font-size:.78rem;color:#555">${item.method}</td>
+        <td style="font-size:.78rem;color:#555;min-width:160px">${item.spec}</td>
+        <td style="font-size:.78rem;color:#555;min-width:200px">${item.method}</td>
         <td class="text-center" style="min-width:115px;vertical-align:top;padding-top:.5rem">
           <select class="check-select" style="width:100%;min-width:0" id="res-${item.id}" onchange="onResultChange('${item.id}')">
             <option value="">-- เลือก --</option>
