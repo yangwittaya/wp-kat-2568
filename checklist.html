@@ -632,6 +632,12 @@ function escapeHtml(s) {
 // ของ textarea คำบรรยายที่ตั้งผ่าน JavaScript ได้ครบถ้วนเสมอไปในทุกกรณี
 // หมายเหตุ: แสดงเฉพาะในเอกสาร Word ที่ export เท่านั้น ไม่กระทบการแสดงผลในโปรแกรมหน้าจอปกติ
 function buildWordPhotoBlocks(clone) {
+  // หมายเหตุ Word compatibility: Microsoft Word (โหมด HTML-in-.doc) ไม่รองรับ CSS
+  // สมัยใหม่ เช่น display:flex, object-fit, max-width:% ฯลฯ — ถ้าใช้ค่าเหล่านี้ Word จะ
+  // เพี้ยนไปแสดงภาพตามขนาดไฟล์จริง (ทำให้สัดส่วน/ตำแหน่งเพี้ยน และเอกสารบวมเป็นร้อยหน้า)
+  // จึงต้อง "ล็อกขนาด" ด้วย attribute width/height ของ <img>/<td>/<table> โดยตรง (หน่วย px)
+  // ร่วมกับโครงสร้างตาราง HTML แบบเก่า ซึ่ง Word อ่านค่าได้แม่นยำกว่า
+  var IMG_W = 290, IMG_H = 210, COL_W = 320;
   Object.keys(photoState).forEach(function(itemId) {
     const photos = photoState[itemId];
     if (!photos || photos.length === 0) return;
@@ -642,18 +648,23 @@ function buildWordPhotoBlocks(clone) {
     const td = tr.querySelector('td');
     if (!td) return;
     let html = '<div style="font-size:9pt;color:#555;margin-bottom:4px;font-weight:bold">รูปภาพประกอบ (' + photos.length + ' ภาพ)</div>';
-    html += '<table style="width:100%;border:none;border-collapse:collapse"><tbody><tr>';
+    html += '<table border="0" cellpadding="6" cellspacing="0" width="' + (COL_W * 2) + '" ' +
+      'style="border-collapse:collapse;table-layout:fixed;width:' + (COL_W * 2) + 'px"><tbody><tr>';
     photos.forEach(function(p, idx) {
       if (idx > 0 && idx % 2 === 0) html += '</tr><tr>';
       const isVideo = p.type && p.type.indexOf('video') === 0;
       const media = isVideo
-        ? '<div style="width:100%;max-width:260px;height:180px;margin:0 auto;display:flex;align-items:center;justify-content:center;border:1px solid #999;background:#eee;font-size:9pt;color:#555">[ไฟล์วิดีโอ ดูจากระบบ]</div>'
-        : '<img src="' + p.url + '" style="width:100%;max-width:260px;height:180px;object-fit:cover;border:1px solid #999;display:block;margin:0 auto" />';
-      html += '<td style="border:none;text-align:center;padding:6px;vertical-align:top;width:50%">' +
+        ? '<table border="0" cellpadding="0" cellspacing="0" width="' + IMG_W + '" height="' + IMG_H + '" ' +
+          'style="width:' + IMG_W + 'px;height:' + IMG_H + 'px;border:1px solid #999;background:#eee">' +
+          '<tr><td align="center" valign="middle" style="font-size:9pt;color:#555">[ไฟล์วิดีโอ ดูจากระบบ]</td></tr></table>'
+        : '<img src="' + p.url + '" width="' + IMG_W + '" height="' + IMG_H + '" ' +
+          'style="width:' + IMG_W + 'px;height:' + IMG_H + 'px;border:1px solid #999" />';
+      html += '<td width="' + COL_W + '" style="width:' + COL_W + 'px;border:none;text-align:center;vertical-align:top">' +
         media +
-        '<div style="font-size:9pt;margin-top:4px;word-break:break-word">' + escapeHtml(p.caption || '') + '</div>' +
+        '<div style="font-size:9pt;margin-top:4px;word-break:break-word;text-align:center">' + escapeHtml(p.caption || '') + '</div>' +
         '</td>';
     });
+    if (photos.length % 2 === 1) html += '<td width="' + COL_W + '" style="width:' + COL_W + 'px;border:none">&nbsp;</td>';
     html += '</tr></tbody></table>';
     td.innerHTML = html;
   });
