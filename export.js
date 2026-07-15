@@ -11,8 +11,10 @@
  * @param {string} filename    - ชื่อไฟล์ (ไม่ต้องใส่นามสกุล)
  * @param {string} docTitle    - ชื่อเรื่องเอกสาร
  * @param {function} [beforeClone] - callback เรียกก่อน clone (เช่น บังคับแสดงทุกแท็บ) ต้อง return ฟังก์ชัน cleanup (หรือ undefined)
+ * @param {function} [afterClone] - callback เรียกหลัง clone แล้ว (รับ clone element เป็นพารามิเตอร์) ใช้แปลง/แทรกเนื้อหาพิเศษ
+ *   ก่อนที่ .no-print จะถูกลบทิ้ง เช่น แปลง gallery รูปภาพ (no-print บนหน้าจอ) ให้กลายเป็นเนื้อหาที่แสดงในเอกสาร Word
  */
-function exportWord(containerId, filename, docTitle, beforeClone) {
+function exportWord(containerId, filename, docTitle, beforeClone, afterClone) {
   const container = document.getElementById(containerId);
   if (!container) { alert('ไม่พบเนื้อหาที่จะส่งออก'); return; }
 
@@ -21,6 +23,8 @@ function exportWord(containerId, filename, docTitle, beforeClone) {
 
   const clone = container.cloneNode(true);
   if (cleanup) cleanup();
+
+  if (typeof afterClone === 'function') afterClone(clone);
 
   // ลบส่วนที่ไม่ควรอยู่ในเอกสาร (ปุ่ม, navbar, ช่องอัปโหลดไฟล์)
   clone.querySelectorAll('.no-print, button, .navbar, .upload-btn-wrap, .photo-grid, script').forEach(el => el.remove());

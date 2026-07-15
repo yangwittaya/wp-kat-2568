@@ -281,6 +281,8 @@ function openMediaViewer(url, isVideo) {
 function addCheckThumb(itemId, url, type, canDelete, caption) {
   canDelete = canDelete || false;
   caption = caption || '';
+  if (!photoState[itemId]) photoState[itemId] = [];
+  photoState[itemId].push({ url: url, type: type, caption: caption });
   var grid = document.getElementById('cmedia-' + itemId);
   if (!grid) return;
   var wrap = document.createElement('div');
@@ -335,6 +337,10 @@ function hidePhotoRowIfEmpty(itemId) {
 // บันทึกคำบรรยายภาพ (debounce กันเขียน Firestore ถี่เกินไปขณะพิมพ์)
 var _captionSaveTimers = {};
 function onCheckCaptionChange(itemId, url, captionVal) {
+  if (photoState[itemId]) {
+    var p = photoState[itemId].find(function(x) { return x.url === url; });
+    if (p) p.caption = captionVal;
+  }
   var key = itemId + '|' + url;
   clearTimeout(_captionSaveTimers[key]);
   _captionSaveTimers[key] = setTimeout(async function() {
@@ -355,6 +361,9 @@ async function deleteCheckMedia(itemId, url, wrapEl) {
       const files = (snap.data().files || []).filter(f => f.url !== url);
       await db.collection(COL.CHECKLIST).doc(itemId).update({ files });
     }
+    if (photoState[itemId]) {
+      photoState[itemId] = photoState[itemId].filter(function(x) { return x.url !== url; });
+    }
     wrapEl.remove();
     hidePhotoRowIfEmpty(itemId);
     showToast('ลบเรียบร้อย ✓');
@@ -363,6 +372,7 @@ async function deleteCheckMedia(itemId, url, wrapEl) {
 
 // In-memory state
 const state = {}; // { "12.1": { result:"ผ่าน", note:"..." }, ... }
+const photoState = {}; // { "12.1": [{url,type,caption}, ...] } — ใช้สำหรับ export Word (ไม่พึ่ง cloneNode อ่านค่า)
 
 // Build checklist table for a tab
 function buildTab(tab) {
@@ -611,6 +621,44 @@ function exportChecklistExcel() {
   showToast('ดาวน์โหลด Excel สำเร็จ ✓');
 }
 
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+
+// สร้างส่วนแสดงรูปภาพ/คำบรรยายสำหรับไฟล์ Word export โดยอ่านจาก photoState (ในหน่วยความจำ)
+// แทนที่จะอ่านจาก DOM/clone โดยตรง เพราะ cloneNode(true) ไม่รับประกันคัดลอกค่า .value
+// ของ textarea คำบรรยายที่ตั้งผ่าน JavaScript ได้ครบถ้วนเสมอไปในทุกกรณี
+// หมายเหตุ: แสดงเฉพาะในเอกสาร Word ที่ export เท่านั้น ไม่กระทบการแสดงผลในโปรแกรมหน้าจอปกติ
+function buildWordPhotoBlocks(clone) {
+  Object.keys(photoState).forEach(function(itemId) {
+    const photos = photoState[itemId];
+    if (!photos || photos.length === 0) return;
+    const tr = clone.querySelector('#photorow-' + CSS.escape(itemId));
+    if (!tr) return;
+    tr.classList.remove('no-print');
+    tr.removeAttribute('style');
+    const td = tr.querySelector('td');
+    if (!td) return;
+    let html = '<div style="font-size:9pt;color:#555;margin-bottom:4px;font-weight:bold">รูปภาพประกอบ (' + photos.length + ' ภาพ)</div>';
+    html += '<table style="width:100%;border:none;border-collapse:collapse"><tbody><tr>';
+    photos.forEach(function(p, idx) {
+      if (idx > 0 && idx % 2 === 0) html += '</tr><tr>';
+      const isVideo = p.type && p.type.indexOf('video') === 0;
+      const media = isVideo
+        ? '<div style="width:100%;max-width:260px;height:180px;margin:0 auto;display:flex;align-items:center;justify-content:center;border:1px solid #999;background:#eee;font-size:9pt;color:#555">[ไฟล์วิดีโอ ดูจากระบบ]</div>'
+        : '<img src="' + p.url + '" style="width:100%;max-width:260px;height:180px;object-fit:cover;border:1px solid #999;display:block;margin:0 auto" />';
+      html += '<td style="border:none;text-align:center;padding:6px;vertical-align:top;width:50%">' +
+        media +
+        '<div style="font-size:9pt;margin-top:4px;word-break:break-word">' + escapeHtml(p.caption || '') + '</div>' +
+        '</td>';
+    });
+    html += '</tr></tbody></table>';
+    td.innerHTML = html;
+  });
+}
+
 // ===== Export: Word (ต้องบังคับให้ทุกแท็บแสดงผลก่อน clone) =====
 function exportChecklistWord() {
   exportWord('mainContent', 'กระดาษทำการ_Checklist_IoT_Smart_Farm', 'กระดาษทำการ Checklist ตรวจรับพัสดุ IoT Smart Farm', () => {
@@ -623,7 +671,7 @@ function exportChecklistWord() {
       panes.forEach(p => { p.className = p.dataset._prevClass; p.style.display = ''; delete p.dataset._prevClass; });
       tabs.style.display = prevTabsDisplay;
     };
-  });
+  }, buildWordPhotoBlocks);
 }
 </script>
 
