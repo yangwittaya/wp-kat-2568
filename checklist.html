@@ -197,8 +197,8 @@ function uploadCheckMedia(event, itemId) {
       var origUrl = e.target.result;
 
       var placeholder = document.createElement('div');
-      placeholder.style.cssText = 'display:flex;align-items:center;justify-content:center;height:160px;border:1px dashed #aaa;border-radius:6px;background:#fafafa;color:#888';
-      placeholder.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x"></i>';
+      placeholder.style.cssText = 'display:flex;align-items:center;justify-content:center;width:92px;height:64px;border:1px dashed #aaa;border-radius:6px;background:#fafafa;color:#888';
+      placeholder.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
       grid.appendChild(placeholder);
 
       compressBase64(origUrl).then(function(b64) {
@@ -223,7 +223,7 @@ function uploadCheckMedia(event, itemId) {
   } else {
     // ===== วิดีโอ: Cloudinary =====
     var previewWrap = document.createElement('div');
-    previewWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;height:160px;border:1px dashed #aaa;border-radius:6px;background:#fafafa;color:#888';
+    previewWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;width:92px;height:64px;border:1px dashed #aaa;border-radius:6px;background:#fafafa;color:#888';
     previewWrap.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x"></i>';
     grid.appendChild(previewWrap);
 
@@ -284,11 +284,11 @@ function addCheckThumb(itemId, url, type, canDelete, caption) {
   var grid = document.getElementById('cmedia-' + itemId);
   if (!grid) return;
   var wrap = document.createElement('div');
-  wrap.style.cssText = 'position:relative;border:1px solid #ddd;border-radius:6px;padding:4px;background:#fff';
+  wrap.style.cssText = 'position:relative;width:92px;border:1px solid #ddd;border-radius:6px;padding:3px;background:#fff';
   if (type && type.startsWith('video')) {
     var btn = document.createElement('div');
     btn.title = 'กดเพื่อเล่นวิดีโอ';
-    btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:160px;background:#e8f5e9;border:1px solid #aaa;border-radius:4px;font-size:2rem;color:#2e7d32;cursor:pointer';
+    btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:64px;background:#e8f5e9;border:1px solid #aaa;border-radius:4px;font-size:1.4rem;color:#2e7d32;cursor:pointer';
     btn.innerHTML = '<i class="fas fa-film"></i>';
     btn.onclick = function() { openMediaViewer(url, true); };
     wrap.appendChild(btn);
@@ -296,21 +296,21 @@ function addCheckThumb(itemId, url, type, canDelete, caption) {
     var img = document.createElement('img');
     img.src = url;
     img.title = 'กดเพื่อดูภาพขยาย';
-    img.style.cssText = 'width:100%;height:160px;object-fit:cover;border-radius:4px;cursor:pointer;display:block';
+    img.style.cssText = 'width:100%;height:64px;object-fit:cover;border-radius:4px;cursor:pointer;display:block';
     img.onclick = function() { openMediaViewer(url, false); };
     wrap.appendChild(img);
   }
   var capInput = document.createElement('input');
   capInput.type = 'text';
   capInput.value = caption;
-  capInput.placeholder = 'คำบรรยายภาพ...';
-  capInput.style.cssText = 'width:100%;margin-top:4px;font-size:.75rem;border:1px solid #ccc;border-radius:4px;padding:3px 6px;box-sizing:border-box';
+  capInput.placeholder = 'คำบรรยาย...';
+  capInput.style.cssText = 'width:100%;margin-top:3px;font-size:.68rem;border:1px solid #ccc;border-radius:4px;padding:2px 4px;box-sizing:border-box';
   capInput.oninput = function() { onCheckCaptionChange(itemId, url, capInput.value); };
   wrap.appendChild(capInput);
   if (canDelete) {
     var delBtn = document.createElement('button');
     delBtn.innerHTML = '&times;'; delBtn.title = 'ลบ';
-    delBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:14px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
+    delBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:12px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
     delBtn.onclick = function() { deleteCheckMedia(itemId, url, wrap); };
     wrap.appendChild(delBtn);
   }
@@ -429,7 +429,7 @@ function buildTab(tab) {
       </tr>
       <tr id="photorow-${item.id}" class="no-print" style="display:none">
         <td colspan="6" style="background:#fafafa;padding:8px 12px;border-top:none">
-          <div id="cmedia-${item.id}" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+          <div id="cmedia-${item.id}" style="display:flex;flex-wrap:wrap;gap:8px"></div>
         </td>
       </tr>`;
   });
