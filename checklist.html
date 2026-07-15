@@ -188,42 +188,31 @@ function uploadCheckMedia(event, itemId) {
   var isVideo = file.type.startsWith('video');
   var grid = document.getElementById('cmedia-' + itemId);
   if (!grid) { showToast('ไม่พบ grid สำหรับ ' + itemId, true); return; }
+  showPhotoRow(itemId);
 
   if (!isVideo) {
-    // ===== รูปภาพ: FileReader → แสดงทันที → บีบอัด → Firestore =====
+    // ===== รูปภาพ: FileReader → แสดง placeholder → บีบอัด → Firestore → แสดงผลจริง =====
     var reader = new FileReader();
     reader.onload = function(e) {
       var origUrl = e.target.result;
 
-      // สร้าง thumbnail แสดงทันที (ยังไม่บีบอัด)
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'position:relative;display:inline-block;margin:2px';
-      var img = document.createElement('img');
-      img.src = origUrl;
-      img.style.cssText = 'width:72px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #aaa;cursor:pointer;display:block';
-      wrap.appendChild(img);
-      grid.appendChild(wrap);
+      var placeholder = document.createElement('div');
+      placeholder.style.cssText = 'display:flex;align-items:center;justify-content:center;height:160px;border:1px dashed #aaa;border-radius:6px;background:#fafafa;color:#888';
+      placeholder.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x"></i>';
+      grid.appendChild(placeholder);
 
-      // บีบอัดแล้วบันทึก Firestore
       compressBase64(origUrl).then(function(b64) {
-        img.src = b64;
-        img.onclick = function() { openMediaViewer(b64, false); };
-
-        // ปุ่มลบ
-        var delBtn = document.createElement('button');
-        delBtn.innerHTML = '&times;'; delBtn.title = 'ลบ';
-        delBtn.style.cssText = 'position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
-        delBtn.onclick = function() { deleteCheckMedia(itemId, b64, wrap); };
-        wrap.appendChild(delBtn);
-
         return db.collection(COL.CHECKLIST).doc(itemId).set(
-          { files: firebase.firestore.FieldValue.arrayUnion({ url: b64, name: file.name, type: 'image/jpeg' }) },
+          { files: firebase.firestore.FieldValue.arrayUnion({ url: b64, name: file.name, type: 'image/jpeg', caption: '' }) },
           { merge: true }
-        );
-      }).then(function() {
+        ).then(function() { return b64; });
+      }).then(function(b64) {
+        placeholder.remove();
+        addCheckThumb(itemId, b64, 'image/jpeg', true, '');
         showToast('บันทึกรูปสำเร็จ ✓');
       }).catch(function(err) {
-        wrap.style.outline = '2px solid #c62828';
+        placeholder.remove();
+        hidePhotoRowIfEmpty(itemId);
         showToast('บันทึกไม่สำเร็จ: ' + err.message, true);
         console.error(err);
       });
@@ -234,8 +223,8 @@ function uploadCheckMedia(event, itemId) {
   } else {
     // ===== วิดีโอ: Cloudinary =====
     var previewWrap = document.createElement('div');
-    previewWrap.style.cssText = 'position:relative;display:inline-block;margin:2px;opacity:0.6';
-    previewWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:72px;height:56px;background:#e8f5e9;border:2px dashed #aaa;border-radius:6px;font-size:1.3rem;color:#888"><i class="fas fa-spinner fa-spin"></i></div>';
+    previewWrap.style.cssText = 'display:flex;align-items:center;justify-content:center;height:160px;border:1px dashed #aaa;border-radius:6px;background:#fafafa;color:#888';
+    previewWrap.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x"></i>';
     grid.appendChild(previewWrap);
 
     var fd = new FormData();
@@ -248,16 +237,16 @@ function uploadCheckMedia(event, itemId) {
       .then(function(data) {
         if (data.error) throw new Error(data.error.message);
         return db.collection(COL.CHECKLIST).doc(itemId).set(
-          { files: firebase.firestore.FieldValue.arrayUnion({ url: data.secure_url, name: file.name, type: file.type }) },
+          { files: firebase.firestore.FieldValue.arrayUnion({ url: data.secure_url, name: file.name, type: file.type, caption: '' }) },
           { merge: true }
         ).then(function() {
           previewWrap.remove();
-          addCheckThumb(itemId, data.secure_url, file.type, true);
+          addCheckThumb(itemId, data.secure_url, file.type, true, '');
           showToast('บันทึกวิดีโอสำเร็จ ✓');
         });
       }).catch(function(err) {
-        previewWrap.style.opacity = '1';
-        previewWrap.style.outline = '2px solid #c62828';
+        previewWrap.remove();
+        hidePhotoRowIfEmpty(itemId);
         showToast('วิดีโอไม่สำเร็จ: ' + err.message, true);
       });
   }
@@ -289,16 +278,17 @@ function openMediaViewer(url, isVideo) {
   document.body.appendChild(overlay);
 }
 
-function addCheckThumb(itemId, url, type, canDelete) {
+function addCheckThumb(itemId, url, type, canDelete, caption) {
   canDelete = canDelete || false;
+  caption = caption || '';
   var grid = document.getElementById('cmedia-' + itemId);
   if (!grid) return;
   var wrap = document.createElement('div');
-  wrap.style.cssText = 'position:relative;display:inline-block;margin:2px';
+  wrap.style.cssText = 'position:relative;border:1px solid #ddd;border-radius:6px;padding:4px;background:#fff';
   if (type && type.startsWith('video')) {
     var btn = document.createElement('div');
     btn.title = 'กดเพื่อเล่นวิดีโอ';
-    btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:72px;height:56px;background:#e8f5e9;border:2px solid #aaa;border-radius:6px;font-size:1.4rem;color:#2e7d32;cursor:pointer';
+    btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:160px;background:#e8f5e9;border:1px solid #aaa;border-radius:4px;font-size:2rem;color:#2e7d32;cursor:pointer';
     btn.innerHTML = '<i class="fas fa-film"></i>';
     btn.onclick = function() { openMediaViewer(url, true); };
     wrap.appendChild(btn);
@@ -306,18 +296,52 @@ function addCheckThumb(itemId, url, type, canDelete) {
     var img = document.createElement('img');
     img.src = url;
     img.title = 'กดเพื่อดูภาพขยาย';
-    img.style.cssText = 'width:72px;height:56px;object-fit:cover;border-radius:6px;border:2px solid #aaa;cursor:pointer;display:block';
+    img.style.cssText = 'width:100%;height:160px;object-fit:cover;border-radius:4px;cursor:pointer;display:block';
     img.onclick = function() { openMediaViewer(url, false); };
     wrap.appendChild(img);
   }
+  var capInput = document.createElement('input');
+  capInput.type = 'text';
+  capInput.value = caption;
+  capInput.placeholder = 'คำบรรยายภาพ...';
+  capInput.style.cssText = 'width:100%;margin-top:4px;font-size:.75rem;border:1px solid #ccc;border-radius:4px;padding:3px 6px;box-sizing:border-box';
+  capInput.oninput = function() { onCheckCaptionChange(itemId, url, capInput.value); };
+  wrap.appendChild(capInput);
   if (canDelete) {
     var delBtn = document.createElement('button');
     delBtn.innerHTML = '&times;'; delBtn.title = 'ลบ';
-    delBtn.style.cssText = 'position:absolute;top:-5px;right:-5px;width:17px;height:17px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
+    delBtn.style.cssText = 'position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:#c62828;color:#fff;font-size:14px;line-height:1;cursor:pointer;padding:0;z-index:2;display:flex;align-items:center;justify-content:center';
     delBtn.onclick = function() { deleteCheckMedia(itemId, url, wrap); };
     wrap.appendChild(delBtn);
   }
   grid.appendChild(wrap);
+  showPhotoRow(itemId);
+}
+
+function showPhotoRow(itemId) {
+  var row = document.getElementById('photorow-' + itemId);
+  if (row) row.style.display = 'table-row';
+}
+
+function hidePhotoRowIfEmpty(itemId) {
+  var grid = document.getElementById('cmedia-' + itemId);
+  var row = document.getElementById('photorow-' + itemId);
+  if (grid && row && grid.children.length === 0) row.style.display = 'none';
+}
+
+// บันทึกคำบรรยายภาพ (debounce กันเขียน Firestore ถี่เกินไปขณะพิมพ์)
+var _captionSaveTimers = {};
+function onCheckCaptionChange(itemId, url, captionVal) {
+  var key = itemId + '|' + url;
+  clearTimeout(_captionSaveTimers[key]);
+  _captionSaveTimers[key] = setTimeout(async function() {
+    try {
+      const snap = await db.collection(COL.CHECKLIST).doc(itemId).get();
+      if (!snap.exists) return;
+      const files = (snap.data().files || []).map(f => f.url === url ? Object.assign({}, f, { caption: captionVal }) : f);
+      await db.collection(COL.CHECKLIST).doc(itemId).set({ files }, { merge: true });
+    } catch(e) { console.error(e); }
+  }, 800);
 }
 
 async function deleteCheckMedia(itemId, url, wrapEl) {
@@ -329,6 +353,7 @@ async function deleteCheckMedia(itemId, url, wrapEl) {
       await db.collection(COL.CHECKLIST).doc(itemId).update({ files });
     }
     wrapEl.remove();
+    hidePhotoRowIfEmpty(itemId);
     showToast('ลบเรียบร้อย ✓');
   } catch(e) { showToast('ลบไม่สำเร็จ: ' + e.message, true); }
 }
@@ -399,8 +424,12 @@ function buildTab(tab) {
                 <input type="file" accept="image/*,video/*" multiple onchange="uploadCheckMedia(event,'${item.id}')">
               </div>
             </div>
-            <div id="cmedia-${item.id}" style="display:flex;flex-wrap:wrap;gap:3px"></div>
           </div>
+        </td>
+      </tr>
+      <tr id="photorow-${item.id}" class="no-print" style="display:none">
+        <td colspan="6" style="background:#fafafa;padding:8px 12px;border-top:none">
+          <div id="cmedia-${item.id}" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
         </td>
       </tr>`;
   });
@@ -530,7 +559,7 @@ async function loadAll() {
       }
       // Restore media thumbnails
       if (d.files && d.files.length > 0) {
-        d.files.forEach(f => addCheckThumb(d.itemId, f.url, f.type, true));
+        d.files.forEach(f => addCheckThumb(d.itemId, f.url, f.type, true, f.caption || ''));
       }
     });
     updateProgress();
