@@ -26,14 +26,34 @@ function exportWord(containerId, filename, docTitle, beforeClone) {
   clone.querySelectorAll('.no-print, button, .navbar, .upload-btn-wrap, .photo-grid, script').forEach(el => el.remove());
 
   // แปลง input/textarea เป็นข้อความล้วน (คงค่าปัจจุบันที่ผู้ใช้กรอกไว้)
-  clone.querySelectorAll('input, textarea').forEach(el => {
+  // หมายเหตุ: อ่านค่าจาก element ต้นฉบับ (ผ่าน id) แทนที่จะอ่านจาก clone โดยตรง
+  // เพราะ cloneNode(true) ไม่รับประกันว่าจะคัดลอกค่า/สถานะที่ถูกตั้งผ่าน JavaScript
+  // (เช่น .value ที่ตั้งตอนโหลดข้อมูลจาก Firestore) ได้ครบถ้วนเสมอไปในทุกกรณี
+  clone.querySelectorAll('input[id], textarea[id]').forEach(el => {
+    const orig = document.getElementById(el.id);
+    const val = orig ? orig.value : el.value;
+    const span = document.createElement('span');
+    span.textContent = val || '';
+    span.style.cssText = 'display:inline-block;border-bottom:1px solid #999;min-width:50px;padding:1px 4px;';
+    el.replaceWith(span);
+  });
+  clone.querySelectorAll('input:not([id]), textarea:not([id])').forEach(el => {
     const span = document.createElement('span');
     span.textContent = el.value || '';
     span.style.cssText = 'display:inline-block;border-bottom:1px solid #999;min-width:50px;padding:1px 4px;';
     el.replaceWith(span);
   });
-  // แปลง select เป็นข้อความของตัวเลือกที่ถูกเลือก
-  clone.querySelectorAll('select').forEach(el => {
+  // แปลง select เป็นข้อความของตัวเลือกที่ถูกเลือก (อ่านจาก element ต้นฉบับเช่นกัน)
+  clone.querySelectorAll('select[id]').forEach(el => {
+    const orig = document.getElementById(el.id);
+    const src = orig || el;
+    const opt = src.options[src.selectedIndex];
+    const span = document.createElement('span');
+    span.textContent = opt ? opt.text : '';
+    span.style.cssText = 'font-weight:bold;';
+    el.replaceWith(span);
+  });
+  clone.querySelectorAll('select:not([id])').forEach(el => {
     const span = document.createElement('span');
     const opt = el.options[el.selectedIndex];
     span.textContent = opt ? opt.text : '';
