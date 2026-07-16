@@ -161,20 +161,34 @@ function autoResize(el) {
 }
 
 // ===== Compress base64 via Canvas =====
+// หมายเหตุ: เดิมถ้า canvas.getContext('2d').drawImage(...) หรือขั้นตอนใดใน onload throw
+// exception (เช่น ภาพความละเอียดสูงมากเกินขีดจำกัดของ canvas บน iPad/iOS Safari, หรือไฟล์
+// HEIC/รูปแบบที่ decode ไม่สำเร็จ) จะไม่มีการ resolve()/reject() ใด ๆ เกิดขึ้นเลย ทำให้
+// Promise ค้างตลอดไป (เป็นสาเหตุที่ไอคอนหมุนโหลด/สปินเนอร์ค้างไม่จบ) จึงเพิ่ม try/catch
+// และ timeout กันเหนียว เพื่อให้ Promise settle เสมอ (fallback ไปใช้ภาพต้นฉบับ ไม่มีข้อมูลภาพ
+// สูญหาย/เสียหาย เพียงแต่ไม่ถูกบีบอัดขนาดในกรณีนั้น)
 function compressBase64(dataUrl, maxW, quality) {
   maxW = maxW || 500; quality = quality || 0.7;
   return new Promise(function(resolve) {
+    var settled = false;
+    var done = function(result) { if (!settled) { settled = true; resolve(result); } };
     var img = new Image();
     img.onload = function() {
-      var ratio = Math.min(maxW / img.width, 1);
-      var canvas = document.createElement('canvas');
-      canvas.width  = Math.round(img.width  * ratio);
-      canvas.height = Math.round(img.height * ratio);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      try {
+        var ratio = Math.min(maxW / img.width, 1);
+        var canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        done(canvas.toDataURL('image/jpeg', quality));
+      } catch (e) {
+        console.error('compressBase64: บีบอัดไม่สำเร็จ ใช้ภาพต้นฉบับแทน', e);
+        done(dataUrl); // fallback: ใช้ original แทนการค้างสปินเนอร์ตลอดไป
+      }
     };
-    img.onerror = function() { resolve(dataUrl); }; // fallback: ใช้ original
+    img.onerror = function() { done(dataUrl); }; // fallback: ใช้ original
     img.src = dataUrl;
+    setTimeout(function() { done(dataUrl); }, 12000); // กันเหนียว: onload/onerror ไม่ทำงานเลย
   });
 }
 
