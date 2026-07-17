@@ -523,9 +523,27 @@ function updateProgress() {
   document.getElementById('progressRow').innerHTML = html;
 }
 
-// หมายเหตุ: Firestore จำกัดจำนวนคำสั่งต่อ 1 batch ไว้สูงสุด 500 รายการ เช็คลิสนี้มี
-// ทั้งหมด 961 ข้อ + เอกสารลายมือชื่ออีก 1 = 962 คำสั่ง เกินลิมิตเดิม (batch เดียว)
-// ทำให้เกิด error "Transaction too big" จึงต้องแบ่งเป็นหลาย batch ย่อยแล้วบันทึกทีละชุด
+// หมายเหตุ: Firestore จำกัดจำนวนคำสั่งต่อ 1 batch ไว้สูงสุด 500 รายการ และขนาดรวมของ
+// ข้อมูลที่แก้ไขต่อ 1 batch ไว้ไม่เกิน 10MB — เช็คลิสนี้มี 961 ข้อ + เอกสารลายมือชื่ออีก 1
+// รวม 962 คำสั่ง แค่แบ่งตามจำนวน (เช่น 400 ต่อ batch) อาจยังไม่พอ เพราะบาง item ที่มีรูปภาพ
+// แนบไว้เยอะ (เก็บเป็น base64 ใน Firestore) ทำให้ batch ที่บังเอิญมี item เหล่านั้นกระจุกตัว
+// อยู่ด้วยกันมีขนาดข้อมูลรวมใหญ่เกิน 10MB ได้ แม้จำนวนคำสั่งจะต่ำกว่า 500 ก็ตาม
+// จึงใช้วิธี "ลองบันทึกเป็นก้อนใหญ่ก่อน ถ้าพังให้หั่นครึ่งแล้วลองใหม่ไปเรื่อยๆ" (adaptive)
+// เพื่อให้ระบบปรับขนาด batch เองอัตโนมัติโดยไม่ต้องเดาตัวเลขที่แน่นอนไว้ล่วงหน้า
+async function commitOpsAdaptive(ops) {
+  if (ops.length === 0) return;
+  const batch = db.batch();
+  ops.forEach(op => batch.set(op.ref, op.data, { merge: true }));
+  try {
+    await batch.commit();
+  } catch (e) {
+    if (ops.length === 1) throw e; // เหลือรายการเดียวแล้วยังพัง ถือเป็น error จริง โยนต่อ
+    const mid = Math.ceil(ops.length / 2);
+    await commitOpsAdaptive(ops.slice(0, mid));
+    await commitOpsAdaptive(ops.slice(mid));
+  }
+}
+
 async function saveAll() {
   const tabs = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19'];
   const ops = [];
@@ -561,13 +579,8 @@ async function saveAll() {
   };
   ops.push({ ref: db.collection(COL.CHECKLIST).doc('_signatures'), data: sigData });
 
-  const CHUNK_SIZE = 400; // ต่ำกว่าลิมิต 500 ของ Firestore เผื่อระยะปลอดภัยไว้
   try {
-    for (let i = 0; i < ops.length; i += CHUNK_SIZE) {
-      const batch = db.batch();
-      ops.slice(i, i + CHUNK_SIZE).forEach(op => batch.set(op.ref, op.data, { merge: true }));
-      await batch.commit();
-    }
+    await commitOpsAdaptive(ops);
     showToast('บันทึกสำเร็จ ✓');
   } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
 }
