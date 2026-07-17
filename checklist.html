@@ -523,21 +523,26 @@ function updateProgress() {
   document.getElementById('progressRow').innerHTML = html;
 }
 
+// หมายเหตุ: Firestore จำกัดจำนวนคำสั่งต่อ 1 batch ไว้สูงสุด 500 รายการ เช็คลิสนี้มี
+// ทั้งหมด 961 ข้อ + เอกสารลายมือชื่ออีก 1 = 962 คำสั่ง เกินลิมิตเดิม (batch เดียว)
+// ทำให้เกิด error "Transaction too big" จึงต้องแบ่งเป็นหลาย batch ย่อยแล้วบันทึกทีละชุด
 async function saveAll() {
   const tabs = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19'];
-  const batch = db.batch();
+  const ops = [];
 
   tabs.forEach(tab => {
     CHECKLIST_DATA[tab].items.forEach(item => {
-      const ref = db.collection(COL.CHECKLIST).doc(item.id);
-      batch.set(ref, {
-        tab:      tab,
-        itemId:   item.id,
-        text:     item.text,
-        result:   state[item.id] ? (state[item.id].result || '') : '',
-        note:     state[item.id] ? (state[item.id].note   || '') : '',
-        updatedAt: serverTS()
-      }, { merge: true });
+      ops.push({
+        ref: db.collection(COL.CHECKLIST).doc(item.id),
+        data: {
+          tab:      tab,
+          itemId:   item.id,
+          text:     item.text,
+          result:   state[item.id] ? (state[item.id].result || '') : '',
+          note:     state[item.id] ? (state[item.id].note   || '') : '',
+          updatedAt: serverTS()
+        }
+      });
     });
   });
 
@@ -554,10 +559,15 @@ async function saveAll() {
     reviewerDate: document.getElementById('reviewerDate').value,
     updatedAt:    serverTS()
   };
-  batch.set(db.collection(COL.CHECKLIST).doc('_signatures'), sigData, { merge: true });
+  ops.push({ ref: db.collection(COL.CHECKLIST).doc('_signatures'), data: sigData });
 
+  const CHUNK_SIZE = 400; // ต่ำกว่าลิมิต 500 ของ Firestore เผื่อระยะปลอดภัยไว้
   try {
-    await batch.commit();
+    for (let i = 0; i < ops.length; i += CHUNK_SIZE) {
+      const batch = db.batch();
+      ops.slice(i, i + CHUNK_SIZE).forEach(op => batch.set(op.ref, op.data, { merge: true }));
+      await batch.commit();
+    }
     showToast('บันทึกสำเร็จ ✓');
   } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
 }
