@@ -43,11 +43,15 @@
       <i class="fas fa-tasks text-success mr-2"></i>Checklist ตรวจรับพัสดุ
       <small class="text-muted ml-2" id="totalCount"></small>
     </h5>
-    <div style="display:flex;flex-wrap:wrap;gap:4px">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+      <select id="exportScope" class="form-control form-control-sm" style="width:auto;display:inline-block" title="ขอบเขตการเรียกรายงาน">
+        <option value="all">รายงาน: ทั้งหมด (1-19)</option>
+        <option value="current">รายงาน: เฉพาะรายการที่เปิดอยู่</option>
+      </select>
       <button class="btn btn-sm btn-success" onclick="saveAll()"><i class="fas fa-save mr-1"></i>บันทึกทั้งหมด</button>
       <button class="btn btn-sm btn-outline-primary" onclick="exportChecklistWord()"><i class="fas fa-file-word mr-1"></i>Word</button>
       <button class="btn btn-sm btn-outline-success" onclick="exportChecklistExcel()"><i class="fas fa-file-excel mr-1"></i>Excel</button>
-      <button class="btn btn-sm btn-print" onclick="window.print()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
+      <button class="btn btn-sm btn-print" onclick="printChecklist()"><i class="fas fa-print mr-1"></i>พิมพ์</button>
     </div>
   </div>
 
@@ -639,11 +643,21 @@ $('#checkTabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
   document.querySelectorAll(target + ' textarea.form-control, ' + target + ' textarea.check-caption-input').forEach(el => autoResize(el));
 });
 
-// ===== Export: Excel (data-model based, ครบทุกแท็บ/712 รายการ) =====
+// อ่านหมายเลขรายการ (แท็บ) ที่กำลังเปิดดูอยู่ในขณะนี้ เช่น '2' สำหรับ "รายการ 2"
+function getActiveTabNumber() {
+  const activeLink = document.querySelector('#checkTabs a.nav-link.active');
+  if (!activeLink) return '1';
+  return (activeLink.getAttribute('href') || '#tab1').replace('#tab', '');
+}
+
+// ===== Export: Excel (data-model based, รองรับเลือกส่งออกทั้งหมดหรือเฉพาะรายการที่เปิดอยู่) =====
 function exportChecklistExcel() {
   if (typeof XLSX === 'undefined') { showToast('ไม่พบไลบรารี XLSX', true); return; }
+  const scope = (document.getElementById('exportScope') || {}).value || 'all';
+  const allTabs = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19'];
+  const tabsToExport = scope === 'all' ? allTabs : [getActiveTabNumber()];
   const wb = XLSX.utils.book_new();
-  ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19'].forEach(tab => {
+  tabsToExport.forEach(tab => {
     const items = CHECKLIST_DATA[tab].items;
     const rows = [['ลำดับ','รหัส','รายการตรวจสอบ','คุณลักษณะที่กำหนด (สเปค)','วิธีการตรวจสอบ','ผลการตรวจ','หมายเหตุ/ผลการทดสอบ']];
     items.forEach((it, i) => {
@@ -654,7 +668,8 @@ function exportChecklistExcel() {
     ws['!cols'] = [{wch:6},{wch:16},{wch:45},{wch:40},{wch:45},{wch:12},{wch:30}];
     XLSX.utils.book_append_sheet(wb, ws, 'รายการ' + tab);
   });
-  XLSX.writeFile(wb, 'กระดาษทำการ_Checklist_IoT_Smart_Farm.xlsx');
+  const filename = 'กระดาษทำการ_Checklist_IoT_Smart_Farm' + (scope === 'all' ? '' : ('_รายการ' + tabsToExport[0]));
+  XLSX.writeFile(wb, filename + '.xlsx');
   showToast('ดาวน์โหลด Excel สำเร็จ ✓');
 }
 
@@ -707,26 +722,57 @@ function buildWordPhotoBlocks(clone) {
   });
 }
 
-// ===== Export: Word (ต้องบังคับให้ทุกแท็บแสดงผลก่อน clone) =====
+// เอาแท็บที่ไม่ได้เปิดดูออกจาก clone เมื่อเลือกขอบเขต "เฉพาะรายการที่เปิดอยู่"
+// และบังคับให้แท็บที่เหลือ (ไม่ว่าจะกรณีใด) แสดงผลแบบไม่พึ่ง CSS class ของ Bootstrap
+// (fade/show/active) เพราะ Word ไม่รองรับ CSS transition/opacity เหล่านั้นอย่างแม่นยำ
+function normalizeTabPanesForExport(clone) {
+  const scope = (document.getElementById('exportScope') || {}).value || 'all';
+  if (scope !== 'all') {
+    const activeId = 'tab' + getActiveTabNumber();
+    clone.querySelectorAll('#tabContent .tab-pane').forEach(p => {
+      if (p.id !== activeId) p.remove();
+    });
+  }
+  clone.querySelectorAll('#tabContent .tab-pane').forEach(p => {
+    p.style.display = 'block';
+    p.style.opacity = '1';
+  });
+}
+
+// ===== Export: Word (รองรับเลือกส่งออกทั้งหมดหรือเฉพาะรายการที่เปิดอยู่) =====
 function exportChecklistWord() {
-  exportWord('mainContent', 'กระดาษทำการ_Checklist_IoT_Smart_Farm', 'กระดาษทำการ Checklist ตรวจรับพัสดุ IoT Smart Farm', () => {
-    const panes = document.querySelectorAll('#tabContent .tab-pane');
-    panes.forEach(p => { p.dataset._prevClass = p.className; p.classList.add('show', 'active'); p.style.display = 'block'; });
-    const tabs = document.getElementById('checkTabs');
-    const prevTabsDisplay = tabs.style.display;
-    tabs.style.display = 'none';
-    return () => {
-      panes.forEach(p => { p.className = p.dataset._prevClass; p.style.display = ''; delete p.dataset._prevClass; });
-      tabs.style.display = prevTabsDisplay;
+  const scope = (document.getElementById('exportScope') || {}).value || 'all';
+  const activeTab = getActiveTabNumber();
+  const filename = 'กระดาษทำการ_Checklist_IoT_Smart_Farm' + (scope === 'all' ? '' : ('_รายการ' + activeTab));
+  const title = 'กระดาษทำการ Checklist ตรวจรับพัสดุ IoT Smart Farm' + (scope === 'all' ? '' : (' (เฉพาะรายการที่ ' + activeTab + ')'));
+  exportWord('mainContent', filename, title, null, function(clone) {
+    normalizeTabPanesForExport(clone);
+    buildWordPhotoBlocks(clone);
+  });
+}
+
+// ===== Print: รองรับเลือกส่งออกทั้งหมดหรือเฉพาะรายการที่เปิดอยู่ =====
+// หมายเหตุ: ถ้าเลือก "เฉพาะรายการที่เปิดอยู่" จะไม่เติม class print-all-tabs ให้ body
+// ทำให้ระหว่างพิมพ์เหลือแค่แท็บที่กำลังเปิดดู (ตามพฤติกรรมปกติของ Bootstrap tab)
+function printChecklist() {
+  const scope = (document.getElementById('exportScope') || {}).value || 'all';
+  if (scope === 'all') {
+    document.body.classList.add('print-all-tabs');
+    const cleanup = function () {
+      document.body.classList.remove('print-all-tabs');
+      window.removeEventListener('afterprint', cleanup);
     };
-  }, buildWordPhotoBlocks);
+    window.addEventListener('afterprint', cleanup);
+  }
+  window.print();
 }
 </script>
 
 <style>
-/* Print: show all tabs, hide tab navigation */
+/* Print: แสดงทุกแท็บเฉพาะเมื่อเลือกขอบเขต "ทั้งหมด" (body มี class print-all-tabs) */
+/* ถ้าไม่มี class นี้ จะพิมพ์เฉพาะแท็บที่กำลังเปิดดูอยู่ ตามพฤติกรรมปกติของ Bootstrap tab */
 @media print {
-  .tab-pane { display: block !important; opacity: 1 !important; }
+  body.print-all-tabs .tab-pane { display: block !important; opacity: 1 !important; }
   .check-select { display: none !important; }
   .print-badge { display: inline !important; }
   .form-control { border: none; background: transparent; box-shadow: none; padding: 0; }
