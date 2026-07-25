@@ -81,7 +81,7 @@
         <div class="card h-100 text-center p-3 card-hover">
           <div style="font-size:2.5rem;color:var(--green)"><i class="fas fa-tasks"></i></div>
           <h6 class="mt-2 font-weight-bold">Checklist ตรวจรับ</h6>
-          <small class="text-muted">126 รายการ ใน 5 หมวด</small>
+          <small class="text-muted">961 รายการ ใน 19 หมวด</small>
           <div id="checklistStatus" class="mt-2"><span class="badge badge-secondary">รอดำเนินการ</span></div>
         </div>
       </a>
@@ -213,21 +213,39 @@ async function saveProject() {
 }
 
 // Load checklist summary
+// หมายเหตุ: ใช้ Firestore REST API พร้อม field mask (ดึงเฉพาะฟิลด์ tab/result) แทนการดึงทั้ง
+// เอกสารผ่าน SDK ปกติ (db.collection().get()) เพราะแต่ละข้อตอนนี้อาจมีรูปภาพ (files) แนบอยู่
+// ขนาดใหญ่ (โดยเฉพาะหลังคัดลอกรูประหว่างข้อที่สเปคตรงกัน) ทำให้หน้าแรกโหลดช้ามากถ้าดึงทุกฟิลด์
+// ทุกครั้งที่เปิดหน้า ทั้งที่หน้านี้ต้องการแค่ผลตรวจ (result) กับหมวด (tab) เท่านั้น
 async function loadChecklistSummary() {
   try {
-    const snap = await db.collection(COL.CHECKLIST).get();
+    const base = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`;
     const results = {};
-    snap.forEach(d => {
-      const data = d.data();
-      const tab  = data.tab;
-      if (!results[tab]) results[tab] = { pass:0, fail:0, skip:0 };
-      if (data.result === 'ผ่าน')      results[tab].pass++;
-      else if (data.result === 'ไม่ผ่าน')  results[tab].fail++;
-      else if (data.result === 'ไม่ได้ตรวจ') results[tab].skip++;
-    });
+    let pageToken = '';
+    do {
+      const url = `${base}/${COL.CHECKLIST}?pageSize=300&key=${firebaseConfig.apiKey}` +
+        `&mask.fieldPaths=tab&mask.fieldPaths=result` +
+        (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('โหลดสรุปไม่สำเร็จ: HTTP ' + res.status);
+      const data = await res.json();
+      (data.documents || []).forEach(doc => {
+        const id = doc.name.split('/').pop();
+        if (id === '_signatures') return;
+        const f = doc.fields || {};
+        const tab = f.tab ? f.tab.stringValue : null;
+        const result = f.result ? f.result.stringValue : '';
+        if (!tab) return;
+        if (!results[tab]) results[tab] = { pass:0, fail:0, skip:0 };
+        if (result === 'ผ่าน')      results[tab].pass++;
+        else if (result === 'ไม่ผ่าน')  results[tab].fail++;
+        else if (result === 'ไม่ได้ตรวจ') results[tab].skip++;
+      });
+      pageToken = data.nextPageToken || '';
+    } while (pageToken);
 
     let totalAll=0, totalDone=0, totalPass=0, totalFail=0;
-    const tabs = ['12','13','16','17','19'];
+    const tabs = ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19'];
     let html = '';
     tabs.forEach(tab => {
       const total = CHECKLIST_DATA[tab].items.length;
