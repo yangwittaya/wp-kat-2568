@@ -217,6 +217,24 @@ async function saveProject() {
 // เอกสารผ่าน SDK ปกติ (db.collection().get()) เพราะแต่ละข้อตอนนี้อาจมีรูปภาพ (files) แนบอยู่
 // ขนาดใหญ่ (โดยเฉพาะหลังคัดลอกรูประหว่างข้อที่สเปคตรงกัน) ทำให้หน้าแรกโหลดช้ามากถ้าดึงทุกฟิลด์
 // ทุกครั้งที่เปิดหน้า ทั้งที่หน้านี้ต้องการแค่ผลตรวจ (result) กับหมวด (tab) เท่านั้น
+// เรียก fetch พร้อม retry อัตโนมัติเมื่อเจอ 429 (Too Many Requests) / 503 (Service Unavailable)
+// ซึ่งเป็นการจำกัดอัตราชั่วคราวของ Firestore ไม่ใช่ข้อมูลเสียหาย รอสักครู่แล้วลองใหม่จะสำเร็จ
+function fetchWithRetry(url, maxRetry) {
+  maxRetry = maxRetry === undefined ? 5 : maxRetry;
+  function attempt(n) {
+    return fetch(url).then(function(res) {
+      if (res.ok) return res;
+      if ((res.status === 429 || res.status === 503) && n < maxRetry) {
+        var wait = 1200 * Math.pow(1.6, n);
+        console.warn('โหลดข้อมูลไม่สำเร็จ (HTTP ' + res.status + ') รอ ' + Math.round(wait) + 'ms แล้วลองใหม่...');
+        return new Promise(function(r) { setTimeout(r, wait); }).then(function() { return attempt(n + 1); });
+      }
+      throw new Error('โหลดสรุปไม่สำเร็จ: HTTP ' + res.status);
+    });
+  }
+  return attempt(0);
+}
+
 async function loadChecklistSummary() {
   try {
     const base = `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents`;
@@ -226,8 +244,7 @@ async function loadChecklistSummary() {
       const url = `${base}/${COL.CHECKLIST}?pageSize=300&key=${firebaseConfig.apiKey}` +
         `&mask.fieldPaths=tab&mask.fieldPaths=result` +
         (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('โหลดสรุปไม่สำเร็จ: HTTP ' + res.status);
+      const res = await fetchWithRetry(url);
       const data = await res.json();
       (data.documents || []).forEach(doc => {
         const id = doc.name.split('/').pop();

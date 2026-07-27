@@ -621,6 +621,24 @@ async function saveAll() {
   } catch(e) { showToast('เกิดข้อผิดพลาด: ' + e.message, true); }
 }
 
+// เรียก fetch พร้อม retry อัตโนมัติเมื่อเจอ 429 (Too Many Requests) / 503 (Service Unavailable)
+// ซึ่งเป็นการจำกัดอัตราชั่วคราวของ Firestore ไม่ใช่ข้อมูลเสียหาย รอสักครู่แล้วลองใหม่จะสำเร็จ
+function fetchWithRetry(url, maxRetry) {
+  maxRetry = maxRetry === undefined ? 5 : maxRetry;
+  function attempt(n) {
+    return fetch(url).then(function(res) {
+      if (res.ok) return res;
+      if ((res.status === 429 || res.status === 503) && n < maxRetry) {
+        var wait = 1200 * Math.pow(1.6, n);
+        console.warn('โหลดข้อมูลไม่สำเร็จ (HTTP ' + res.status + ') รอ ' + Math.round(wait) + 'ms แล้วลองใหม่...');
+        return new Promise(function(r) { setTimeout(r, wait); }).then(function() { return attempt(n + 1); });
+      }
+      throw new Error('โหลดข้อมูลไม่สำเร็จ: HTTP ' + res.status);
+    });
+  }
+  return attempt(0);
+}
+
 // หมายเหตุ: โหลดข้อมูลเป็น 2 ขั้นตอนแยกกัน
 // ขั้นที่ 1 (เร็ว): ดึงเฉพาะ result/note ผ่าน Firestore REST API + field mask (ไม่ดึงรูปภาพ)
 //   เพื่อให้หน้าเว็บพร้อมใช้งาน (ผลตรวจ/หมายเหตุ/ความคืบหน้า) ได้เร็ว ไม่ต้องรอโหลดรูปทั้งหมดก่อน
@@ -635,8 +653,7 @@ async function loadAll() {
       const url = `${base}/${COL.CHECKLIST}?pageSize=300&key=${firebaseConfig.apiKey}` +
         `&mask.fieldPaths=result&mask.fieldPaths=note` +
         (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('โหลดข้อมูลไม่สำเร็จ: HTTP ' + res.status);
+      const res = await fetchWithRetry(url);
       const data = await res.json();
       (data.documents || []).forEach(doc => {
         const id = doc.name.split('/').pop();
@@ -681,8 +698,7 @@ async function loadAllPhotos() {
       const url = `${base}/${COL.CHECKLIST}?pageSize=100&key=${firebaseConfig.apiKey}` +
         `&mask.fieldPaths=files` +
         (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : '');
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('โหลดรูปภาพไม่สำเร็จ: HTTP ' + res.status);
+      const res = await fetchWithRetry(url);
       const data = await res.json();
       (data.documents || []).forEach(doc => {
         const id = doc.name.split('/').pop();
